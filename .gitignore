@@ -1,0 +1,19 @@
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# редакторы
+.vscode/
+.idea/
+*.swp
+
+# временное
+._check.js
+*.log
+node_modules/
+dist/
+*.zip
+
+# локальные настройки Claude
+.claude/settings.local.json

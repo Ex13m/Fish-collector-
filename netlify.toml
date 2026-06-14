@@ -1,0 +1,10 @@
+# Netlify: автодеплой из git. Статика без сборки.
+[build]
+  publish = "."
+  command = ""
+
+# service worker не кэшировать — иначе застревает старая версия
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache, max-age=0, must-revalidate"

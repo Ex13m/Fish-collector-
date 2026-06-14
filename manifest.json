@@ -1,0 +1,17 @@
+{
+  "name": "FISH COLLECTOR — коллекция трофеев",
+  "short_name": "FISH COLLECTOR",
+  "description": "Современный PWA-каталогизатор поимок: собирай рыбу как голографические стикеры, открывай карточки-образцы, скачивай и заказывай наклейки.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#04070d",
+  "theme_color": "#04070d",
+  "lang": "ru",
+  "categories": ["sports", "lifestyle", "entertainment"],
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

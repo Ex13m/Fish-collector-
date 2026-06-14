@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0c2236"/><stop offset="1" stop-color="#04070d"/>
+    </linearGradient>
+    <linearGradient id="fish" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9fe9e0"/><stop offset=".5" stop-color="#34e7d6"/><stop offset="1" stop-color="#1fb9aa"/>
+    </linearGradient>
+    <radialGradient id="glow" cx=".5" cy=".4" r=".6">
+      <stop offset="0" stop-color="#34e7d6" stop-opacity=".5"/><stop offset="1" stop-color="#34e7d6" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <circle cx="256" cy="220" r="180" fill="url(#glow)"/>
+  <g transform="translate(70 170) scale(2.45)">
+    <path d="M8 30c22-16 80-18 112-8 8 3 12 3 20-2-3 7-3 13 0 20-8-5-12-5-20-2-32 10-90 8-112-8z" fill="url(#fish)"/>
+    <path d="M18 30c25-4 75-4 100 1-25 4-75 4-100-1z" fill="#04070d" opacity=".25"/>
+    <circle cx="22" cy="27" r="3.4" fill="#04070d"/>
+  </g>
+  <g fill="#ffc24b">
+    <circle cx="380" cy="150" r="6"/><circle cx="410" cy="200" r="4"/><circle cx="120" cy="360" r="5"/>
+  </g>
+</svg>
