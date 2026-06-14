@@ -1,71 +1,66 @@
 # FISH COLLECTOR — передаточный файл проекта
 
-Главный технический документ. Всё, что нужно для развития веб-версии или пересборки нативно.
+Главный технический документ. Всё для развития веб-версии или нативной пересборки.
 
 - **Репозиторий:** https://github.com/Ex13m/Fish-collector-
 - **Веб-деплой:** статика на Netlify (drag-and-drop ZIP или git). Без бэкенда, без ключей.
-- **Текущая версия:** см. `APP_VERSION` в `index.html` и `V` в `sw.js` (держать синхронно).
+- **Версия:** `APP_VERSION` в `index.html` и `V` в `sw.js` (синхронно). Сейчас 2.0.0.
 
 ---
 
 ## 1. Что это
-PWA-каталогизатор личных поимок рыбы. Каждый вид — коллекционный «образец/стикер». Цель: собрать всю
-рыбу северных вод, вести журнал трофеев, скачивать и заказывать наклейки. Эстетика — холодный
-«cold-ops» lookbook (slate-blue монохром, editorial-типографика, технические mono-подписи).
+PWA для коллекционирования **личных поимок любой рыбы** в виде die-cut стикеров. Поток:
+фото → вырезка фона → белая обводка → ввод данных (имя/размер/дата/место) → стикер в коллекцию.
+Самостоятельный проект (НЕ связан с Dolmsundet), для любых вод и видов. Языки RU/EN/NO.
 
 ## 2. Архитектура (веб)
-- **Один файл** `index.html` (vanilla JS, без сборки). Внешка — только Google Fonts (CDN).
-- PWA: `manifest.json` + `sw.js` (офлайн-кэш статики, HTML — network-first).
-- Данные пользователя — `localStorage`.
-- Палитра `:root`: фон-градиент `--b0..--b3` (#8a98a5 → #3f4a55), `--ink #f2f6f8`, `--gold #d8c9a8`,
-  редкости `--r-common…--r-legendary`. Анимации: `--spring`, `--ease`.
-- Шрифты: Anton (мега-дисплей), Oswald (заголовки/лейблы), Archivo (текст), Space Mono (данные/бирки).
+- **Один файл** `index.html` (vanilla JS, без сборки).
+- Внешка: Google Fonts (CDN) + `@imgly/background-removal` (ESM по CDN, lazy-import при первой вырезке).
+- PWA: `manifest.json` + `sw.js` (офлайн-кэш статики; HTML — network-first; кросс-домен статика/модель кэшируется).
+- Дизайн `:root`: фон-градиент `--b0..--b3`, `--ink #f2f6f8`, `--gold #d8c9a8`; анимации `--spring`/`--ease`.
+- Шрифты: Anton (мега), Oswald (лейблы), Archivo (текст), Space Mono (данные/бирки).
 
-## 3. Данные (в index.html)
-- `FISH` — SVG-арт по видам (id → строка svg).
-- `SPECIES[]` — каталог: `{id,n(рус),lat,r(rarity),depth,habit,a,b,fil,min,max,d(описание),tip(как ловить),crab?}`.
-  Виды: paltus, uer, molva, hek, zubatka, lyr, treska, saida, makrel, piksha, sild, krab.
-- `RARITY` / `RCOL` — 5 уровней редкости (common→legendary), вес `w` задаёт порядок значимости на главной.
-- `STICKER_PRICE` — цена наклейки (₽).
+## 3. Хранилище
+- **localStorage** `fishcollector_catches_v2` — массив метаданных:
+  `[{id, name, lang, L(см), qty, ts(мс), place, lat?, lon?, method, note, hasPhoto}]`.
+- **IndexedDB** `fishcollector` → store `img` (ключ→dataURL): `stk_<id>` (стикер PNG, прозрачный, вырезка+обводка),
+  `org_<id>` (оригинал JPEG ~1000px). Картинки в IDB, т.к. localStorage мал для фото.
+- `fishcollector_lang` — выбранный язык.
+- Память: `IMG[id] = {stk, org}` — кэш dataURL, чтобы не дёргать IDB на каждый рендер (`prefetchImages` при старте).
 
-## 4. Расчёты (эвристика)
-- Вес особи: `W(кг) = a·Lᵇ / 1000` (L — длина см; для краба L = ширина панциря). Филе: `W·fil`.
-- Трофей: запись с максимальной длиной по виду (`isTrophy`). `bestLen(id)` — рекорд.
-- Веса/коэффициенты — примерные (с рыбацких таблиц), не выдавать за точные.
+## 4. Обработка фото (ядро)
+- `loadBitmap(src)` — File/Blob/dataURL → bitmap (учёт EXIF-ориентации через createImageBitmap).
+- `aiRemove(file,onP)` — динамический `import()` `@imgly/background-removal` по CDN, `removeBackground` с прогрессом → bitmap без фона. Модель ~40 МБ, грузится один раз, кэшируется SW.
+- `floodRemove(bmp,tol)` — офлайн-фолбэк: заливка от 4 углов по цвету фона (порог tol), делает прозрачным похожий фон.
+- `makeSticker(src,outline)` — белая die-cut обводка: силуэт раздувается по кольцу (36 шагов ×2 радиуса), `source-in` заливка белым → подложка; сверху вырезка. Возврат canvas (прозрачный).
+- `processSticker(input,mode,bmp)` — оркестратор: `ai` → при ошибке `simple` → крайний фолбэк «оригинал».
+- Кнопки студии: Заменить фото · Простая вырезка · Без вырезки.
 
-## 5. Хранилище (localStorage)
-- `fishcollector_catches_v1` — массив записей поимок:
-  `[{id, L(см), qty, ts(мс), place, lat?, lon?, method, note, photo(dataURL 840px JPEG|null)}]`.
-  Питает: статус «собран», карточку вида, журнал, статистику (поимки/трофеи/кг/легендарные).
+## 5. Экраны / функции
+- **Splash** (~2 c) → `#app.in`.
+- **Topbar**: бренд, переключатель языка `#langSel` (RU/EN/NO, `applyLang`), кнопка заказа.
+- **Hero**: editorial-заголовок + `.feat` (всего стикеров, виды, рекорд см, места, трофеи).
+- **Tools**: сортировка `size/new/name/trophy` (`sortedCatches`).
+- **Grid** (`renderGrid`/`itemEl`): стикеры с обводкой + подпись (имя; размер·место·дата); пусто → `.empty` с CTA.
+- **Card** (`openCard`): 3D-tilt стикер, спек-сетка, фото оригинала, кнопки ещё/скачать/заказать/удалить.
+- **Form** (`openForm`): студия фото + поля + GPS (`getGeo`) + datalist имён `NAMES[LANG]`. `saveCatch` → IDB + LS → `celebrate`.
+- **Download** (`downloadSticker`): стикер + впечатанная подпись (имя + размер, белый текст с тёмной обводкой) → PNG.
+- **Order** (`openOrder`/`sendOrder`): количества по стикерам → письмо `mailto:ex333m@gmail.com` (сервис владельца).
+- **FX**: `celebrate` (кольца+конфетти+vibrate), `burstConfetti`, `toast`, пузыри.
 
-## 6. Экраны / модули
-- **Splash** — анимированный вход (рыба вплывает, заголовок), ~2 c, затем `#app.in`.
-- **Topbar** — бренд, mono-навигация (фильтры), кнопка заказа наклеек.
-- **Hero** — editorial-заголовок + `.feat` панель прогресса (собрано видов, %, поимки/трофеи/кг/легендарные).
-- **Инвентарь** — фильтры (`all/caught/locked/legendary/epic/rare`) + сетка `.item` (срезанные углы,
-  индекс №, точка-редкость, счётчик ×N, трофей). `sortedSpecies()` — порядок по значимости.
-- **Карточка** (`openCard`) — 3D-tilt арт, досье, спек-сетка, журнал поимок, кнопки Поимка/Стикер/Заказать.
-- **Форма поимки** (`openForm`) — поля + GPS (`getGeo`) + фото (`resizePhoto`). `saveCatch` → новый вид = `celebrate()`.
-- **Заказ наклеек** (`openOrder`) — выбор количеств по собранным видам, итог, контакты → `sendOrder` (mailto на почту владельца).
-- **Стикер PNG** (`downloadSticker`/`renderStickerCanvas`) — die-cut наклейка с рыбой, именем, редкостью, рекордом, штрихкодом.
-- **FX** — `celebrate` (кольца+конфетти+vibrate), `burstConfetti`, `toast`, пузыри `makeBubbles`.
+## 6. i18n
+`I18N[ru|en|no]` — словарь строк; `t(key)`; статика через `[data-i18n]` + ручной набор в `applyLang`.
+`NAMES[lang]` — автоподсказки названий рыбы. Имя рыбы вводится свободно на выбранном языке.
 
-## 7. Заказ наклеек (сервис владельца)
-`sendOrder` формирует письмо (`mailto:ex333m@gmail.com`) со списком позиций, количеством, суммой и адресом.
-Для продакшна можно заменить на свой бэкенд/форму (Netlify Forms / Functions) — точка интеграции одна.
+## 7. Версионирование / деплой
+- Бампать `APP_VERSION` + `V` синхронно (скил `bump-version`). `scripts/check.mjs` проверяет JS и совпадение версий (SessionStart-хук).
+- ZIP: `index.html, manifest.json, sw.js, icon.svg, netlify.toml` (скил `deploy-zip`).
+- Камера/GPS → нужен HTTPS (Netlify даёт).
 
-## 8. Версионирование / деплой
-- Бампать `APP_VERSION` (index.html) и `V` (sw.js) синхронно при каждом релизе (скил `bump-version`).
-- ZIP для Netlify: `index.html, manifest.json, sw.js, icon.svg, netlify.toml` (скил `deploy-zip`).
-- Git-автодеплой: ветка → Netlify (`netlify.toml`: publish `.`, no-cache для `sw.js`).
-- Скилы проекта: `.claude/skills/{deploy-zip,bump-version,mobile-check}`.
+## 8. Для нативной версии
+- Вырезка фона — нативные SDK (iOS Vision / VNGenerateForegroundInstanceMask, Android ML Kit Subject Segmentation).
+- Хранилище — SQLite/файлы; структура из §3. Заказ — нативный share / API печати.
 
-## 9. Для нативной версии (что учесть)
-- SVG-арт и данные `SPECIES` переносятся 1:1.
-- `localStorage` → нативное хранилище (UserDefaults/SharedPreferences/SQLite); структура из §5.
-- Фото — в нативное файловое хранилище; GPS — нативное API геолокации.
-- Заказ наклеек — нативный share / API сервиса печати.
-
-## 10. Идеи для развития
-- Реальные фото-образцы видов, карта мест поимок, экспорт/импорт коллекции (JSON),
-  достижения/бейджи, шеринг карточки в соцсети, лидерборд, привязка к порталу DOLMSUNDET (живой клёв).
+## 9. Идеи развития
+- Шеринг карточки/стикера, лист стикеров для печати (A4), экспорт/импорт коллекции (JSON+изображения),
+  ручной ластик для доводки вырезки, карта мест, достижения, облачная синхронизация (опционально).
