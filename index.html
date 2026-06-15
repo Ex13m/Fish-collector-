@@ -18,7 +18,7 @@
 <style>
 :root{
   --b0:#8a98a5; --b1:#6f7e8c; --b2:#56636f; --b3:#3f4a55;
-  --ink:#f2f6f8; --ink2:#dde4e9; --mut:#aab6c0; --cap:#cfd8df;
+  --ink:#f2f6f8; --ink2:#e2e8ec; --mut:#b8c4cd; --cap:#d6dee4;
   --line:rgba(255,255,255,.16); --line2:rgba(255,255,255,.28);
   --panel:rgba(28,38,48,.22); --panel2:rgba(20,28,36,.4);
   --gold:#d8c9a8;
@@ -35,10 +35,13 @@ body{background:var(--b1);color:var(--ink2);font-family:'Archivo',system-ui,sans
 button{font-family:inherit;color:inherit;cursor:pointer;border:0;background:none}
 img{max-width:100%;display:block}
 ::selection{background:var(--ink);color:var(--b2)}
+:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:1px}
+.item:focus-visible{outline:none}
+.item:focus-visible .frame{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink)}
 
 /* backdrop */
 .env{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
-.env .sky{position:absolute;inset:0;background:linear-gradient(180deg,#94a1ad 0%,#76838f 32%,#5a6772 68%,#414c57 100%)}
+.env .sky{position:absolute;inset:0;background:linear-gradient(180deg,#8c99a6 0%,#6d7a87 34%,#525e6a 70%,#363f49 100%)}
 .env .haze{position:absolute;inset:0;background:radial-gradient(120% 80% at 70% 0%,rgba(255,255,255,.18),transparent 55%)}
 .env .mtn{position:absolute;left:0;right:0;bottom:0;background:no-repeat bottom/cover}
 .env .m1{height:60vh;opacity:.3;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 400' preserveAspectRatio='none'%3E%3Cpath d='M0 400V230L160 120l120 70 130-120 150 150 120-80 160 130 110-60 140 90v170Z' fill='%233f4a55'/%3E%3C/svg%3E")}
@@ -92,17 +95,29 @@ img{max-width:100%;display:block}
 .cta .o svg{width:24px;height:24px;stroke:var(--b3);stroke-width:2.2;fill:none}
 .cta .ct b{display:block;font-family:'Oswald';font-weight:600;text-transform:uppercase;letter-spacing:.06em;font-size:15px;color:var(--ink)}
 .cta .ct small{font-family:'Space Mono';font-size:10px;color:var(--mut)}
-.feat{position:relative;padding:18px;background:var(--panel);border:1px solid var(--line);clip-path:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,18px 100%,0 calc(100% - 18px));overflow:hidden;min-height:230px;display:flex;flex-direction:column}
-.feat .ft{font-family:'Space Mono';font-size:10px;letter-spacing:.2em;color:var(--cap);display:flex;justify-content:space-between}
-.feat .fbig{font-family:'Anton';font-size:clamp(56px,9vw,92px);color:var(--ink);line-height:.85;margin:6px 0 2px}
-.feat .pbar{height:4px;background:rgba(255,255,255,.18);margin:10px 0 14px;overflow:hidden}
-.feat .pbar i{display:block;height:100%;width:0;background:var(--ink);transition:width 1.3s var(--ease)}
-.feat .frow{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;margin-top:auto}
-.feat .frow div{font-family:'Space Mono';font-size:10px;color:var(--mut);letter-spacing:.05em}
-.feat .frow div b{display:block;font-family:'Oswald';font-weight:600;font-size:22px;color:var(--ink)}
-.feat .ffish{position:absolute;right:-6px;bottom:-6px;width:42%;opacity:.5;filter:grayscale(.2) drop-shadow(0 8px 14px rgba(0,0,0,.3));animation:bob 5s ease-in-out infinite;color:#e7eef2}
-.feat .ffish img{width:100%;filter:drop-shadow(0 8px 14px rgba(0,0,0,.35))}
-@media(max-width:760px){.hero{grid-template-columns:1fr;gap:22px}.feat{min-height:190px}}
+/* signature: the user's own die-cut sticker on a lit stage = the hero thesis */
+.stage{position:relative;display:grid;place-items:center;min-height:320px;padding:24px;
+  background:radial-gradient(120% 100% at 50% 8%,rgba(255,255,255,.14),transparent 58%);
+  border:1px solid var(--line);clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,20px 100%,0 calc(100% - 20px))}
+.stage .glow{position:absolute;width:66%;height:56%;top:16%;left:17%;border-radius:50%;
+  background:radial-gradient(closest-side,rgba(216,201,168,.3),rgba(127,168,216,.16),transparent);filter:blur(26px);animation:pulse 6s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.08);opacity:.8}}
+.stage .slabel{position:absolute;top:14px;left:16px;font-family:'Space Mono';font-size:10px;letter-spacing:.2em;color:var(--cap);z-index:3}
+.stage .scard{position:relative;z-index:2;width:74%;cursor:pointer;transition:transform .12s linear}
+.stage .scard img{width:100%;max-height:236px;object-fit:contain;filter:drop-shadow(0 24px 32px rgba(20,28,36,.62));animation:bob 6s ease-in-out infinite}
+.stage .scard .ghost{color:#e7eef2;opacity:.4}
+.stage .scap{position:absolute;bottom:14px;left:16px;right:16px;z-index:3;font-family:'Space Mono';font-size:11px;color:var(--ink)}
+.stage .scap b{font-family:'Oswald';font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+/* quiet progress strip (number demoted from hero) */
+.progress{margin-top:26px;max-width:460px}
+.progress .pnum{font-family:'Space Mono';font-size:11px;color:var(--cap);margin-bottom:8px;letter-spacing:.04em}
+.progress .pnum b{font-family:'Oswald';font-weight:700;font-size:18px;color:var(--ink);margin-right:5px}
+.progress .pbar{height:3px;background:rgba(255,255,255,.18);overflow:hidden}
+.progress .pbar i{display:block;height:100%;width:0;background:var(--ink);transition:width 1.3s var(--ease)}
+.progress .pstats{display:flex;gap:8px 20px;flex-wrap:wrap;margin-top:11px}
+.progress .pstats span{font-family:'Space Mono';font-size:10px;color:var(--mut);letter-spacing:.04em}
+.progress .pstats b{font-family:'Oswald';font-weight:600;font-size:15px;color:var(--ink);margin-right:4px}
+@media(max-width:760px){.hero{grid-template-columns:1fr;gap:22px}.stage{min-height:260px}}
 
 /* section + tools */
 .sect{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin:6px 0 18px}
@@ -125,10 +140,11 @@ img{max-width:100%;display:block}
   clip-path:polygon(0 0,calc(100% - var(--notch)) 0,100% var(--notch),100% 100%,var(--notch) 100%,0 calc(100% - var(--notch)))}
 .item:active .frame{transform:scale(.96)}
 @media(hover:hover){.item:hover .frame{transform:translateY(-6px);border-color:var(--line2);box-shadow:0 22px 40px rgba(20,28,36,.4)}}
-.item .stk{width:92%;max-height:84%;object-fit:contain;filter:drop-shadow(0 10px 16px rgba(20,28,36,.5));animation:finbob 5s ease-in-out infinite}
-@keyframes finbob{50%{transform:translateY(-5px) rotate(-1deg)}}
+.item .stk{width:92%;max-height:84%;object-fit:contain;filter:drop-shadow(0 10px 16px rgba(20,28,36,.5));transition:transform .4s var(--spring)}
+@media(hover:hover){.item:hover .stk{transform:translateY(-4px) scale(1.03)}}
 .item .idx{position:absolute;top:10px;left:12px;font-family:'Space Mono';font-size:10px;color:var(--mut);z-index:3}
-.item .troph{position:absolute;top:9px;right:11px;font-size:15px;z-index:3;filter:drop-shadow(0 2px 5px rgba(0,0,0,.4))}
+.item .troph{position:absolute;top:9px;right:10px;z-index:3;width:17px;height:17px;color:var(--gold);filter:drop-shadow(0 2px 5px rgba(0,0,0,.4))}
+.item .troph svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.8}
 .item .sheen{position:absolute;inset:0;background:linear-gradient(115deg,transparent 38%,rgba(255,255,255,.28) 50%,transparent 62%);transform:translateX(-120%)}
 .item:active .sheen{animation:sheen 1s var(--ease)}
 @keyframes sheen{to{transform:translateX(120%)}}
@@ -178,7 +194,8 @@ img{max-width:100%;display:block}
 .cardbody{padding:6px 22px 24px}
 .cardbody .ttl{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .cardbody h2{font-family:'Anton';font-size:clamp(30px,8vw,46px);color:var(--ink);margin:0;line-height:.9}
-.cardbody .trf{font-family:'Space Mono';font-size:11px;color:var(--gold)}
+.cardbody .trf{font-family:'Space Mono';font-size:11px;color:var(--gold);display:inline-flex;align-items:center;gap:5px}
+.cardbody .trf svg{width:14px;height:14px}
 .specgrid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);margin:16px 0}
 .spec{background:var(--panel2);padding:11px 13px}
 .spec .k{font-family:'Space Mono';font-size:9.5px;letter-spacing:.1em;color:var(--mut);text-transform:uppercase}
@@ -264,7 +281,7 @@ img{max-width:100%;display:block}
 </head>
 <body>
 
-<div class="env"><div class="sky"></div><div class="haze"></div><div class="mtn m1"></div><div class="mtn m2"></div><div class="grain"></div></div>
+<div class="env"><div class="sky"></div><div class="haze"></div><div class="mtn m1"></div><div class="mtn m2"></div></div>
 <div class="bubbles" id="bubbles"></div>
 
 <div id="splash"><div class="sp-wrap">
@@ -296,18 +313,22 @@ img{max-width:100%;display:block}
         <span class="o"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>
         <span class="ct"><b id="ctaB">Добавить улов</b><small>new sticker ↗</small></span>
       </button>
-    </div>
-    <div class="feat">
-      <div class="ft"><span id="featLbl">[ В КОЛЛЕКЦИИ ]</span><span id="featSub"></span></div>
-      <div class="fbig anton"><span id="fCount">0</span></div>
-      <div class="pbar"><i id="fBar"></i></div>
-      <div class="frow">
-        <div><b id="sSpecies">0</b><span data-i18n="nSpecies">видов</span></div>
-        <div><b id="sRecord">0</b><span data-i18n="nRecord">рекорд, см</span></div>
-        <div><b id="sPlaces">0</b><span data-i18n="nPlaces">мест</span></div>
-        <div><b id="sTroph">0</b><span data-i18n="nTroph">трофеев</span></div>
+      <div class="progress">
+        <div class="pnum"><b id="fCount">0</b><span id="featLbl">в коллекции</span></div>
+        <div class="pbar"><i id="fBar"></i></div>
+        <div class="pstats">
+          <span><b id="sSpecies">0</b><span data-i18n="nSpecies">видов</span></span>
+          <span><b id="sRecord">0</b><span data-i18n="nRecord">рекорд, см</span></span>
+          <span><b id="sPlaces">0</b><span data-i18n="nPlaces">мест</span></span>
+          <span><b id="sTroph">0</b><span data-i18n="nTroph">трофеев</span></span>
+        </div>
       </div>
-      <div class="ffish" id="featFish"></div>
+    </div>
+    <div class="stage" id="stage">
+      <div class="glow"></div>
+      <div class="slabel"><span id="stageTag">TOP SPECIMEN</span></div>
+      <div class="scard" id="stageCard"></div>
+      <div class="scap" id="stageCap"></div>
     </div>
   </section>
 
@@ -339,16 +360,17 @@ img{max-width:100%;display:block}
 
 <script>
 "use strict";
-const APP_VERSION='2.0.0';
+const APP_VERSION='2.1.0';
 const $=id=>document.getElementById(id);
 const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
 const FISH_SIL=`<svg viewBox="0 0 150 60" fill="currentColor"><path d="M10 30c22-16 80-18 112-8 8 3 12 3 20-2-3 7-3 13 0 20-8-5-12-5-20-2-32 10-90 8-112-8z"/><circle cx="22" cy="27" r="2.6" fill="#3f4a55"/><path d="M12 33c-2 2-2 3-3 5" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>`;
+const TROPHY_SVG=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4.5V8A3 3 0 0 0 7 11M17 6h2.5V8a3 3 0 0 1-2.5 3"/></svg>`;
 
 /* =================== I18N =================== */
 const I18N={
  ru:{splashSub:'Лови. Снимай. Коллекционируй.',heroTitle:'ПОЙМАЛ.<br>СФОТКАЛ.<br><span class="gh">СОБРАЛ.</span>',
    heroBlurb:'Любая рыба превращается в коллекционный стикер: приложение вырезает фон, добавляет белую обводку и подпись. Жми на стикер — он приблизится и покажет размер, место, дату и фото оригинала.',
-   ctaB:'Добавить улов',fabTxt:'Улов',sectTitle:'МОЯ КОЛЛЕКЦИЯ',featLbl:'[ В КОЛЛЕКЦИИ ]',
+   ctaB:'Добавить улов',fabTxt:'Улов',sectTitle:'МОЯ КОЛЛЕКЦИЯ',featLbl:'в коллекции',topSpecimen:'ГЛАВНЫЙ ТРОФЕЙ',stageEmpty:'Здесь появится твой первый стикер — нажми «Добавить улов»',
    nSpecies:'видов',nRecord:'рекорд, см',nPlaces:'мест',nTroph:'трофеев',
    sortSize:'ПО РАЗМЕРУ',sortNew:'СВЕЖИЕ',sortName:'ПО ВИДУ',sortTrophy:'ТРОФЕИ',
    emptyH:'Коллекция пуста',emptyP:'Сфоткай первую рыбу — приложение вырежет фон и сделает die-cut стикер.',
@@ -368,7 +390,7 @@ const I18N={
    ordered:'Заявка сформирована ✉️',dlReady:'Стикер скачан ✓',gpsReady:'[ GPS READY ]',gpsWait:'[ определяю… ]',gpsOk:'[ координаты ✓ ]',gpsFail:'[ нет GPS — введи вручную ]',gpsNo:'[ GPS недоступен ]'},
  en:{splashSub:'Catch. Shoot. Collect.',heroTitle:'CATCH IT.<br>SHOOT IT.<br><span class="gh">COLLECT IT.</span>',
    heroBlurb:'Any fish becomes a collectible sticker: the app cuts out the background, adds a white die-cut outline and a label. Tap a sticker — it zooms in and shows size, place, date and the original photo.',
-   ctaB:'Add catch',fabTxt:'Catch',sectTitle:'MY COLLECTION',featLbl:'[ IN COLLECTION ]',
+   ctaB:'Add catch',fabTxt:'Catch',sectTitle:'MY COLLECTION',featLbl:'in collection',topSpecimen:'TOP SPECIMEN',stageEmpty:'Your first sticker shows up here — tap “Add catch”',
    nSpecies:'species',nRecord:'record, cm',nPlaces:'spots',nTroph:'trophies',
    sortSize:'BY SIZE',sortNew:'NEWEST',sortName:'BY SPECIES',sortTrophy:'TROPHIES',
    emptyH:'Collection is empty',emptyP:'Shoot your first fish — the app removes the background and makes a die-cut sticker.',
@@ -388,7 +410,7 @@ const I18N={
    ordered:'Order drafted ✉️',dlReady:'Sticker downloaded ✓',gpsReady:'[ GPS READY ]',gpsWait:'[ locating… ]',gpsOk:'[ coords ✓ ]',gpsFail:'[ no GPS — type manually ]',gpsNo:'[ GPS unavailable ]'},
  no:{splashSub:'Fang. Knips. Samle.',heroTitle:'FANG DEN.<br>KNIPS DEN.<br><span class="gh">SAMLE DEN.</span>',
    heroBlurb:'Enhver fisk blir et samleklistremerke: appen fjerner bakgrunnen, legger til hvit die-cut-kant og etikett. Trykk på et klistremerke — det zoomer inn og viser størrelse, sted, dato og originalbildet.',
-   ctaB:'Legg til fangst',fabTxt:'Fangst',sectTitle:'MIN SAMLING',featLbl:'[ I SAMLINGEN ]',
+   ctaB:'Legg til fangst',fabTxt:'Fangst',sectTitle:'MIN SAMLING',featLbl:'i samlingen',topSpecimen:'TOPPFANGST',stageEmpty:'Ditt første klistremerke dukker opp her — trykk «Legg til fangst»',
    nSpecies:'arter',nRecord:'rekord, cm',nPlaces:'steder',nTroph:'trofeer',
    sortSize:'ETTER STØRRELSE',sortNew:'NYESTE',sortName:'ETTER ART',sortTrophy:'TROFEER',
    emptyH:'Samlingen er tom',emptyP:'Knips din første fisk — appen fjerner bakgrunnen og lager et die-cut-klistremerke.',
@@ -422,6 +444,9 @@ function loadCatches(){try{return JSON.parse(localStorage.getItem(LS))||[];}catc
 function saveCatches(){localStorage.setItem(LS,JSON.stringify(CATCHES));}
 let CATCHES=loadCatches();
 const IMG={}; // memory cache id->{stk,org}
+// honest catalog numbering: stable № per catch, assigned in order added
+function ensureNumbers(){let max=Math.max(0,...CATCHES.map(c=>+c.no||0));const miss=CATCHES.filter(c=>!c.no).sort((a,b)=>(a.ts||0)-(b.ts||0));miss.forEach(c=>c.no=++max);if(miss.length)saveCatches();}
+function topCatch(){return [...CATCHES].sort((a,b)=>(+b.L||0)-(+a.L||0)||(b.ts||0)-(a.ts||0))[0];}
 
 let _db;
 function idb(){return new Promise((res,rej)=>{if(_db)return res(_db);const r=indexedDB.open('fishcollector',1);
@@ -517,17 +542,20 @@ function renderGrid(){
   g.style.display='grid';
   sortedCatches().forEach((c,i)=>g.appendChild(itemEl(c,i)));
 }
+function unit(){return LANG==='ru'?'см':'cm';}
 function itemEl(c,i){
   const node=el('div','item');node.style.setProperty('--d',(i*0.045)+'s');
+  node.tabIndex=0;node.setAttribute('role','button');node.setAttribute('aria-label',c.name+(c.L?', '+c.L+' '+unit():''));
   const stk=(IMG[c.id]&&IMG[c.id].stk)||'';
-  const meta=[(+c.L?`<span class="big">${c.L} ${LANG==='no'?'cm':'см'}${LANG==='en'?'':''}</span>`:''),
+  const meta=[(+c.L?`<span class="big">${c.L} ${unit()}</span>`:''),
     (c.place?`<span>${esc(shortPlace(c.place))}</span>`:''),(c.ts?`<span>${fmtDate(c.ts)}</span>`:'')].filter(Boolean).join('');
   node.innerHTML=`<div class="frame">
-      <div class="idx mono">№${String(i+1).padStart(2,'0')}</div>${isTrophy(c)?'<div class="troph">🏆</div>':''}
+      <div class="idx mono">№${String(c.no||i+1).padStart(2,'0')}</div>${isTrophy(c)?`<div class="troph" title="${t('trophy')}">${TROPHY_SVG}</div>`:''}
       ${stk?`<img class="stk" src="${stk}" alt="${esc(c.name)}"/>`:`<div class="stk" style="color:#e7eef2;opacity:.5;width:80%">${FISH_SIL}</div>`}
       <div class="sheen"></div></div>
     <div class="cap"><div class="nm">${esc(c.name)}</div><div class="meta">${meta||'<span>—</span>'}</div></div>`;
   node.addEventListener('click',()=>openCard(c));
+  node.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openCard(c);}});
   return node;
 }
 function shortPlace(p){p=p.trim();const m=p.match(/(-?\d+\.\d+)[,\s]+(-?\d+\.\d+)/);if(m)return(+m[1]).toFixed(2)+', '+(+m[2]).toFixed(2);return p.length>16?p.slice(0,15)+'…':p;}
@@ -537,10 +565,21 @@ function renderStats(){
   const n=CATCHES.length,sp=uniqNames().length,rec=Math.max(0,...CATCHES.map(c=>+c.L||0)),pl=uniqPlaces().length;
   const tr=CATCHES.filter(isTrophy).length;
   $('fCount').textContent=n;$('sSpecies').textContent=sp;$('sRecord').textContent=rec||0;$('sPlaces').textContent=pl;$('sTroph').textContent=tr;
-  $('fBar').style.width=Math.min(100,n*8)+'%';$('featSub').textContent=n?('+'+n):'';
-  const top=sortedCatches()[0];const ff=$('featFish');
-  if(top&&IMG[top.id]&&IMG[top.id].stk)ff.innerHTML=`<img src="${IMG[top.id].stk}" alt=""/>`;else ff.innerHTML=`<div style="color:#e7eef2">${FISH_SIL}</div>`;
+  $('fBar').style.width=Math.min(100,n*8)+'%';
+  // stage = signature: feature the user's biggest sticker (or invite first catch)
+  const top=topCatch(),sc=$('stageCard'),cap=$('stageCap');$('stageTag').textContent=t('topSpecimen');
+  if(top&&IMG[top.id]&&IMG[top.id].stk){
+    sc.innerHTML=`<img src="${IMG[top.id].stk}" alt="${esc(top.name)}"/>`;
+    cap.innerHTML=`<b>${esc(top.name)}</b>${top.L?' · '+top.L+' '+unit():''}${top.place?'<br>'+esc(shortPlace(top.place)):''}`;
+    sc.onclick=()=>openCard(top);
+  }else{
+    sc.innerHTML=`<div class="ghost">${FISH_SIL}</div>`;cap.textContent=t('stageEmpty');sc.onclick=()=>openForm();
+  }
+  tiltLite(sc);
 }
+function tiltLite(node){if(!node)return;const wrap=node.parentElement;
+  wrap.onpointermove=e=>{const r=wrap.getBoundingClientRect();const px=(e.clientX-r.left)/r.width-.5,py=(e.clientY-r.top)/r.height-.5;node.style.transform=`rotateY(${px*16}deg) rotateX(${-py*16}deg)`;};
+  wrap.onpointerleave=()=>{node.style.transform='';};}
 
 /* =================== SHEETS =================== */
 function openSheet(id){$('scrim').classList.add('open');$(id).classList.add('open');document.body.style.overflow='hidden';}
@@ -550,7 +589,7 @@ async function openCard(c){
   if(!IMG[c.id])IMG[c.id]={};
   if(IMG[c.id].org===undefined)IMG[c.id].org=c.hasPhoto?(await idbGet('org_'+c.id)||''):'';
   const stk=IMG[c.id].stk||'',org=IMG[c.id].org||'';
-  const idx=sortedCatches().findIndex(x=>x.id===c.id)+1;
+  const idx=c.no||(sortedCatches().findIndex(x=>x.id===c.id)+1);
   const place=c.place||(c.lat?`${(+c.lat).toFixed(4)}, ${(+c.lon).toFixed(4)}`:t('noRec'));
   const when=c.ts?new Date(c.ts).toLocaleString(LANG,{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):t('noRec');
   const rec=bestLen(c.name);
@@ -563,7 +602,7 @@ async function openCard(c){
       <div class="card3d" id="card3d">${stk?`<img src="${stk}" alt="${esc(c.name)}"/>`:`<div style="color:#e7eef2">${FISH_SIL}</div>`}</div>
     </div>
     <div class="cardbody">
-      <div class="ttl"><h2 class="anton">${esc(c.name)}</h2>${isTrophy(c)?`<span class="trf">🏆 ${t('trophy')}</span>`:''}</div>
+      <div class="ttl"><h2 class="anton">${esc(c.name)}</h2>${isTrophy(c)?`<span class="trf">${TROPHY_SVG} ${t('trophy')}</span>`:''}</div>
       <div class="specgrid">
         <div class="spec"><div class="k">${t('kSize')}</div><div class="v">${c.L?c.L+' '+(LANG==='no'?'cm':'см'):t('noRec')}${(+c.qty>1)?' · ×'+c.qty:''}</div></div>
         <div class="spec"><div class="k">${t('kRecord')}</div><div class="v">${rec?rec+' '+(LANG==='no'?'cm':'см'):t('noRec')}</div></div>
@@ -606,7 +645,7 @@ function openForm(presetName){
           <svg viewBox="0 0 24 24"><path d="M3 7h4l2-3h6l2 3h4v13H3z"/><circle cx="12" cy="13" r="4"/></svg>
           <div class="t">${t('photoPick')}</div>
         </div>
-        <input id="fPhoto" type="file" accept="image/*" capture="environment" hidden/>
+        <input id="fPhoto" type="file" accept="image/*" hidden/>
         <div class="studio-acts" id="studioActs" style="display:none">
           <button id="aRetake">${t('retake')}</button>
           <button id="aSimple">${t('cutSimple')}</button>
@@ -682,7 +721,7 @@ async function saveCatch(){
   if(!F.stk){toast(t('needPhoto'));return;}
   const id=uid();
   const place=$('fPlace').value.trim();
-  const c={id,name,lang:LANG,L:parseFloat($('fL').value)||0,qty:Math.max(1,parseInt($('fQ').value)||1),
+  const c={id,no:Math.max(0,...CATCHES.map(x=>+x.no||0))+1,name,lang:LANG,L:parseFloat($('fL').value)||0,qty:Math.max(1,parseInt($('fQ').value)||1),
     ts:$('fDt').value?new Date($('fDt').value).getTime():Date.now(),place,
     method:$('fMethod').value.trim(),note:$('fNote').value.trim(),hasPhoto:!!F.orig};
   const m=place.match(/(-?\d+\.\d+)[,\s]+(-?\d+\.\d+)/);if(m){c.lat=+m[1];c.lon=+m[2];}
@@ -777,13 +816,14 @@ function burstConfetti(){
     if(f<92)requestAnimationFrame(loop);else x.clearRect(0,0,cv.width,cv.height);})();
 }
 let toastT;function toast(m){const el2=$('toast');el2.textContent=m;el2.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el2.classList.remove('show'),2600);}
-function makeBubbles(){const b=$('bubbles');for(let i=0;i<14;i++){const d=el('div','bubble');const sz=6+Math.random()*20;d.style.width=d.style.height=sz+'px';d.style.left=Math.random()*100+'vw';d.style.setProperty('--dx',(Math.random()*40-20)+'px');d.style.animationDuration=(11+Math.random()*16)+'s';d.style.animationDelay=(-Math.random()*16)+'s';b.appendChild(d);}}
+function makeBubbles(){const b=$('bubbles');for(let i=0;i<8;i++){const d=el('div','bubble');const sz=6+Math.random()*18;d.style.width=d.style.height=sz+'px';d.style.left=Math.random()*100+'vw';d.style.setProperty('--dx',(Math.random()*40-20)+'px');d.style.animationDuration=(11+Math.random()*16)+'s';d.style.animationDelay=(-Math.random()*16)+'s';b.appendChild(d);}}
 
 /* =================== INIT =================== */
 async function init(){
   $('splashFish').innerHTML=FISH_SIL;$('verTxt').textContent=APP_VERSION;
   $('brandMk').innerHTML=`<svg viewBox="0 0 40 40" style="color:#f2f6f8"><g transform="translate(2,12) scale(.24)">${FISH_SIL.replace('<svg viewBox="0 0 150 60" fill="currentColor">','').replace('</svg>','')}</g></svg>`;
   makeBubbles();
+  ensureNumbers();
   await prefetchImages();
   applyLang();
   $('fab').onclick=()=>openForm();$('ctaAdd').onclick=()=>openForm();$('orderAllBtn').onclick=()=>openOrder();

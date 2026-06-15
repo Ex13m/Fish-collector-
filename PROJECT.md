@@ -54,6 +54,7 @@ PWA для коллекционирования **личных поимок лю
 
 ## 7. Версионирование / деплой
 - Бампать `APP_VERSION` + `V` синхронно (скил `bump-version`). `scripts/check.mjs` проверяет JS и совпадение версий (SessionStart-хук).
+- Дизайн-скилы (в `.claude/skills/`, и глобально): `frontend-design` (anthropics/skills) — принципы; `ui-ux-pro-max` — БД стилей/палитр/шрифтов + `scripts/search.py`. Палитра холодная по брифу (дефолтные палитры скила НЕ применять). Применены: сигнатурный стикер-герой, SVG-иконки (без эмодзи), `:focus-visible` + клавиатура, честная нумерация (`c.no`), сдержанная анимация.
 - ZIP: `index.html, manifest.json, sw.js, icon.svg, netlify.toml` (скил `deploy-zip`).
 - Камера/GPS → нужен HTTPS (Netlify даёт).
 
