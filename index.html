@@ -233,6 +233,11 @@ img{max-width:100%;display:block}
 .studio.empty-st{border-style:dashed;cursor:pointer;padding:30px;text-align:center}
 .studio.empty-st svg{width:30px;height:30px;stroke:var(--mut);stroke-width:1.4;fill:none;margin-bottom:10px}
 .studio.empty-st .t{font-family:'Space Mono';font-size:12px;color:var(--mut)}
+.studio .pickrow{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;justify-content:center}
+.studio .pickrow button{display:inline-flex;align-items:center;gap:7px;font-family:'Oswald';font-weight:600;text-transform:uppercase;letter-spacing:.04em;font-size:12px;color:var(--b3);background:var(--ink);padding:11px 16px;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px))}
+.studio .pickrow button.alt{background:var(--panel);color:var(--ink);border:1px solid var(--line2)}
+.studio .pickrow button svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8}
+.studio .pickrow button:active{transform:scale(.95)}
 .studio .checker{position:absolute;inset:0;background-image:linear-gradient(45deg,rgba(255,255,255,.06) 25%,transparent 25%,transparent 75%,rgba(255,255,255,.06) 75%),linear-gradient(45deg,rgba(255,255,255,.06) 25%,transparent 25%,transparent 75%,rgba(255,255,255,.06) 75%);background-size:22px 22px;background-position:0 0,11px 11px;opacity:.5}
 .studio .prev{position:relative;z-index:2;max-height:260px;width:auto;object-fit:contain;padding:12px;filter:drop-shadow(0 12px 18px rgba(20,28,36,.5))}
 .studio .ov{position:absolute;inset:0;z-index:3;background:rgba(20,28,36,.55);display:grid;place-content:center;text-align:center;gap:12px}
@@ -329,7 +334,7 @@ img{max-width:100%;display:block}
 
 <script>
 "use strict";
-const APP_VERSION='3.0.0';
+const APP_VERSION='3.0.1';
 const $=id=>document.getElementById(id);
 const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
 const TROPHY_SVG=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4.5V8A3 3 0 0 0 7 11M17 6h2.5V8a3 3 0 0 1-2.5 3"/></svg>`;
@@ -407,7 +412,7 @@ const I18N={
    caught:'ПОЙМАНО',caughtAgain:'СНОВА ПОЙМАНО',trophyNew:'НОВЫЙ ТРОФЕЙ',
    share:'Поделиться',done:'Готово',shareFallback:'Стикер скачан — прикрепи его',
    formTitle:'Новый улов',formSub:'[ фото → вырезка фона → стикер ]',
-   fPhoto:'Фото рыбы',photoPick:'СНЯТЬ ИЛИ ВЫБРАТЬ ФОТО',cutting:'Вырезаю фон…',loadingModel:'Загружаю ИИ-модель…',
+   fPhoto:'Фото рыбы',photoPick:'ДОБАВЬ ФОТО РЫБЫ',camera:'Камера',gallery:'Галерея',firstLoadHint:'первый запуск модели может занять время',cutting:'Вырезаю фон…',loadingModel:'Загружаю ИИ-модель…',
    cutDone:'СТИКЕР ГОТОВ',cutSimple:'Простая вырезка',keepOrig:'Без вырезки',retake:'Заменить фото',
    fName:'Вид рыбы',fNamePh:'выбери из списка или впиши свой',fSize:'Размер, см',fQty:'Количество',fDate:'Дата и время',
    fPlace:'Место',fPlacePh:'точка или координаты',fMethod:'Способ / снасть',fMethodPh:'спиннинг, джиг…',fNote:'Заметка',fNotePh:'история поимки…',
@@ -430,7 +435,7 @@ const I18N={
    caught:'CAUGHT',caughtAgain:'CAUGHT AGAIN',trophyNew:'NEW TROPHY',
    share:'Share',done:'Done',shareFallback:'Sticker downloaded — attach it',
    formTitle:'New catch',formSub:'[ photo → cut out → sticker ]',
-   fPhoto:'Fish photo',photoPick:'TAKE OR PICK A PHOTO',cutting:'Removing background…',loadingModel:'Loading AI model…',
+   fPhoto:'Fish photo',photoPick:'ADD A FISH PHOTO',camera:'Camera',gallery:'Gallery',firstLoadHint:'first model run may take a moment',cutting:'Removing background…',loadingModel:'Loading AI model…',
    cutDone:'STICKER READY',cutSimple:'Simple cutout',keepOrig:'Keep original',retake:'Replace photo',
    fName:'Species',fNamePh:'pick from list or type your own',fSize:'Size, cm',fQty:'Quantity',fDate:'Date & time',
    fPlace:'Place',fPlacePh:'spot or coordinates',fMethod:'Method / tackle',fMethodPh:'spinning, jig…',fNote:'Note',fNotePh:'the story…',
@@ -453,7 +458,7 @@ const I18N={
    caught:'FANGET',caughtAgain:'FANGET IGJEN',trophyNew:'NYTT TROFÉ',
    share:'Del',done:'Ferdig',shareFallback:'Klistremerke lastet ned — legg det ved',
    formTitle:'Ny fangst',formSub:'[ bilde → utklipp → klistremerke ]',
-   fPhoto:'Fiskebilde',photoPick:'TA ELLER VELG BILDE',cutting:'Fjerner bakgrunn…',loadingModel:'Laster AI-modell…',
+   fPhoto:'Fiskebilde',photoPick:'LEGG TIL FISKEBILDE',camera:'Kamera',gallery:'Galleri',firstLoadHint:'første modellkjøring kan ta litt tid',cutting:'Fjerner bakgrunn…',loadingModel:'Laster AI-modell…',
    cutDone:'KLISTREMERKE KLART',cutSimple:'Enkelt utklipp',keepOrig:'Behold original',retake:'Bytt bilde',
    fName:'Art',fNamePh:'velg fra listen eller skriv egen',fSize:'Størrelse, cm',fQty:'Antall',fDate:'Dato & tid',
    fPlace:'Sted',fPlacePh:'sted eller koordinater',fMethod:'Metode / redskap',fMethodPh:'spinning, jigg…',fNote:'Notat',fNotePh:'historien…',
@@ -685,8 +690,9 @@ function openForm(presetName){
     <div class="form">
       <h2 class="anton">${t('formTitle')}</h2><div class="sub">${t('formSub')}</div>
       <div class="field"><label>${t('fPhoto')}</label>
-        <div class="studio empty-st" id="studio"><svg viewBox="0 0 24 24"><path d="M3 7h4l2-3h6l2 3h4v13H3z"/><circle cx="12" cy="13" r="4"/></svg><div class="t">${t('photoPick')}</div></div>
-        <input id="fPhoto" type="file" accept="image/*" hidden/>
+        <div class="studio empty-st" id="studio"></div>
+        <input id="fCam" type="file" accept="image/*" capture="environment" hidden/>
+        <input id="fGal" type="file" accept="image/*" hidden/>
         <div class="studio-acts" id="studioActs" style="display:none"><button id="aRetake">${t('retake')}</button><button id="aSimple">${t('cutSimple')}</button><button id="aKeep">${t('keepOrig')}</button></div></div>
       <div class="field"><label>${t('fName')}</label><input id="fName" list="namelist" value="${presetName?esc(presetName):''}" placeholder="${t('fNamePh')}"/><datalist id="namelist">${datal}</datalist></div>
       <div class="two"><div class="field"><label>${t('fSize')}</label><input id="fL" type="number" inputmode="decimal" min="0" placeholder="—"/></div>
@@ -698,16 +704,23 @@ function openForm(presetName){
       <div class="btnrow"><button class="btn ghost" data-close>${t('cancel')}</button><button class="btn pri" id="fSave"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg> ${t('save')}</button></div>
     </div>`;
   openSheet('formSheet');$('formSheet').scrollTop=0;
-  $('studio').onclick=()=>{if($('studio').classList.contains('empty-st'))$('fPhoto').click();};
-  $('fPhoto').onchange=onPhotoPick;$('fGeo').onclick=getGeo;$('fSave').onclick=saveCatch;
-  $('aRetake').onclick=()=>$('fPhoto').click();
+  bindStudioEmpty();
+  $('fCam').onchange=onPhotoPick;$('fGal').onchange=onPhotoPick;$('fGeo').onclick=getGeo;$('fSave').onclick=saveCatch;
+  $('aRetake').onclick=bindStudioEmpty;
   $('aSimple').onclick=()=>{if(F.bmp)processSticker(F.bmp,'simple');};
   $('aKeep').onclick=()=>{if(F.bmp){F.stk=bmpToDataURL(F.bmp,760,'image/png');showStudio(F.stk,'ORIGINAL');}};
   $('formContent').querySelectorAll('[data-close]').forEach(b=>b.onclick=closeSheets);
 }
+function studioEmptyHTML(){return `<svg viewBox="0 0 24 24"><path d="M3 7h4l2-3h6l2 3h4v13H3z"/><circle cx="12" cy="13" r="4"/></svg><div class="t">${t('photoPick')}</div>
+  <div class="pickrow">
+    <button id="pCam"><svg viewBox="0 0 24 24"><path d="M3 7h4l2-3h6l2 3h4v13H3z"/><circle cx="12" cy="13" r="4"/></svg>${t('camera')}</button>
+    <button id="pGal" class="alt"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="2"/><path d="m4 18 5-5 4 3 3-3 4 4"/></svg>${t('gallery')}</button>
+  </div>`;}
+function bindStudioEmpty(){const s=$('studio');s.className='studio empty-st';s.innerHTML=studioEmptyHTML();const a=$('studioActs');if(a)a.style.display='none';
+  $('pCam').onclick=ev=>{ev.stopPropagation();$('fCam').click();};$('pGal').onclick=ev=>{ev.stopPropagation();$('fGal').click();};}
 function showStudio(src,badge){const s=$('studio');s.classList.remove('empty-st');s.innerHTML=`<div class="checker"></div><img class="prev" src="${src}"/>${badge?`<div class="badge mono">${badge}</div>`:''}`;$('studioActs').style.display='flex';}
 function showStudioLoading(label,pct){const s=$('studio');s.classList.remove('empty-st');
-  s.innerHTML=`<div class="checker"></div>${F.orig?`<img class="prev" src="${F.orig}" style="opacity:.4"/>`:''}<div class="ov"><div class="t">${label}</div><div class="pb"><i id="pbI" style="width:${Math.round((pct||0)*100)}%"></i></div><button id="ovSimple" style="margin-top:4px;font-family:'Space Mono';font-size:11px;color:var(--ink);border:1px solid var(--line2);padding:8px 14px;background:var(--panel2)">${t('cutSimple')}</button></div>`;
+  s.innerHTML=`<div class="checker"></div>${F.orig?`<img class="prev" src="${F.orig}" style="opacity:.4"/>`:''}<div class="ov"><div class="t">${label}</div><div class="pb"><i id="pbI" style="width:${Math.round((pct||0)*100)}%"></i></div><button id="ovSimple" style="margin-top:4px;font-family:'Space Mono';font-size:11px;color:var(--ink);border:1px solid var(--line2);padding:8px 14px;background:var(--panel2)">${t('cutSimple')}</button><div style="font-family:'Space Mono';font-size:9px;color:var(--mut);margin-top:2px;max-width:200px">${t('firstLoadHint')}</div></div>`;
   $('studioActs').style.display='none';const b=$('ovSimple');if(b)b.onclick=()=>{if(F.bmp)processSticker(F.bmp,'simple');};}
 async function onPhotoPick(e){const file=e.target.files[0];if(!file)return;showStudioLoading(t('cutting'),0);
   exifGPS(file).then(g=>{const pl=$('fPlace');if(g&&pl&&!pl.value.trim()){pl.value=g.lat.toFixed(4)+', '+g.lon.toFixed(4);const h=$('fGeoHint');if(h)h.textContent=t('gpsPhoto');}});
@@ -717,7 +730,7 @@ async function onPhotoPick(e){const file=e.target.files[0];if(!file)return;showS
 async function processSticker(input,mode,bmp){
   try{
     if(mode==='ai'){showStudioLoading(t('loadingModel'),0.05);
-      const cut=await aiRemove(input,p=>{const i=$('pbI');if(i)i.style.width=Math.round((0.05+p*0.9)*100)+'%';const lab=document.querySelector('#studio .ov .t');if(lab)lab.textContent=t('cutting');});
+      const cut=await aiRemove(input,p=>{const i=$('pbI');if(i)i.style.width=Math.round((0.05+p*0.9)*100)+'%';const lab=document.querySelector('#studio .ov .t');if(lab)lab.textContent=t('cutting')+' '+Math.round(p*100)+'%';});
       F.stk=makeSticker(cut).toDataURL('image/png');showStudio(F.stk,'AI · '+t('cutDone'));
     }else{showStudioLoading(t('cutting'),0.4);const cut=floodRemove(bmp||F.bmp,62);F.stk=makeSticker(cut).toDataURL('image/png');showStudio(F.stk,t('cutDone'));}
   }catch(err){console.error(err);if(mode==='ai'){toast(t('aiUnavailable'));return processSticker(F.bmp,'simple');}F.stk=bmpToDataURL(F.bmp,760,'image/png');showStudio(F.stk,'ORIGINAL');}
@@ -788,9 +801,9 @@ let _bgmod_loading=null;
 async function aiRemove(file,onP){
   if(!_bgmod_loading)_bgmod_loading=import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.6.0/+esm').catch(e=>{_bgmod_loading=null;throw e;});
   const mod=await _bgmod_loading;
-  const job=mod.removeBackground(file,{progress:(k,c,total)=>{onP&&onP(total?c/total:0);},output:{format:'image/png'}});
-  // never hang: hard timeout → caller falls back to simple cutout
-  const blob=await Promise.race([job,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),45000))]);
+  // isnet_quint8 = самая лёгкая/быстрая модель — критично для мобилы (меньше качать, быстрее считать)
+  const job=mod.removeBackground(file,{model:'isnet_quint8',output:{format:'image/png'},progress:(k,c,total)=>{onP&&onP(total?c/total:0);}});
+  const blob=await Promise.race([job,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),60000))]);
   return await loadBitmap(blob);}
 
 /* ===== sticker png (cutout + outline + label) ===== */
