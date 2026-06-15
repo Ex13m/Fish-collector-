@@ -346,7 +346,7 @@ img{max-width:100%;display:block}
 
 <script>
 "use strict";
-const APP_VERSION='3.2.0';
+const APP_VERSION='3.2.1';
 const $=id=>document.getElementById(id);
 const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
 const TROPHY_SVG=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4.5V8A3 3 0 0 0 7 11M17 6h2.5V8a3 3 0 0 1-2.5 3"/></svg>`;
@@ -425,7 +425,7 @@ const I18N={
    share:'Поделиться',done:'Готово',shareFallback:'Стикер скачан — прикрепи его',
    formTitle:'Новый улов',formSub:'[ фото → вырезка фона → стикер ]',
    fPhoto:'Фото рыбы',photoPick:'ДОБАВЬ ФОТО РЫБЫ',camera:'Камера',gallery:'Галерея',firstLoadHint:'первый запуск модели может занять время',cutting:'Вырезаю фон…',loadingModel:'Загружаю ИИ-модель…',
-   cutDone:'СТИКЕР ГОТОВ',cutSimple:'Простая вырезка',cutAi:'ИИ-вырезка',keepOrig:'Без вырезки',retake:'Заменить фото',cutFish:'Вырезать рыбу',cutFull:'Весь кадр',cropHint:'Наведи рамку на рыбу и нажми «Вырезать рыбу»',eraseExtra:'Стереть лишнее',erase:'Стереть',restore:'Вернуть',reset:'Сброс',
+   cutDone:'СТИКЕР ГОТОВ',cutSimple:'Простая вырезка',cutAi:'ИИ-вырезка',keepOrig:'Без вырезки',retake:'Заменить фото',cutFish:'Вырезать рыбу',cutFull:'Весь кадр',cropHint:'Наведи рамку на рыбу и нажми «Вырезать рыбу»',eraseExtra:'Стереть лишнее',erase:'Стереть',restore:'Вернуть',reset:'Сброс',alreadyCut:'Фото уже без фона — стикер готов',
    fName:'Вид рыбы',fNamePh:'выбери из списка или впиши свой',fSize:'Размер, см',fQty:'Количество',fDate:'Дата и время',
    fPlace:'Место',fPlacePh:'точка или координаты',fMethod:'Способ / снасть',fMethodPh:'спиннинг, джиг…',fNote:'Заметка',fNotePh:'история поимки…',
    cancel:'Отмена',save:'В коллекцию',needName:'Укажи вид рыбы',needPhoto:'Добавь фото',
@@ -448,7 +448,7 @@ const I18N={
    share:'Share',done:'Done',shareFallback:'Sticker downloaded — attach it',
    formTitle:'New catch',formSub:'[ photo → cut out → sticker ]',
    fPhoto:'Fish photo',photoPick:'ADD A FISH PHOTO',camera:'Camera',gallery:'Gallery',firstLoadHint:'first model run may take a moment',cutting:'Removing background…',loadingModel:'Loading AI model…',
-   cutDone:'STICKER READY',cutSimple:'Simple cutout',cutAi:'AI cutout',keepOrig:'Keep original',retake:'Replace photo',cutFish:'Cut the fish',cutFull:'Whole frame',cropHint:'Frame the fish and tap “Cut the fish”',eraseExtra:'Erase extra',erase:'Erase',restore:'Restore',reset:'Reset',
+   cutDone:'STICKER READY',cutSimple:'Simple cutout',cutAi:'AI cutout',keepOrig:'Keep original',retake:'Replace photo',cutFish:'Cut the fish',cutFull:'Whole frame',cropHint:'Frame the fish and tap “Cut the fish”',eraseExtra:'Erase extra',erase:'Erase',restore:'Restore',reset:'Reset',alreadyCut:'Photo already cut out — sticker ready',
    fName:'Species',fNamePh:'pick from list or type your own',fSize:'Size, cm',fQty:'Quantity',fDate:'Date & time',
    fPlace:'Place',fPlacePh:'spot or coordinates',fMethod:'Method / tackle',fMethodPh:'spinning, jig…',fNote:'Note',fNotePh:'the story…',
    cancel:'Cancel',save:'Collect',needName:'Enter the species',needPhoto:'Add a photo',
@@ -471,7 +471,7 @@ const I18N={
    share:'Del',done:'Ferdig',shareFallback:'Klistremerke lastet ned — legg det ved',
    formTitle:'Ny fangst',formSub:'[ bilde → utklipp → klistremerke ]',
    fPhoto:'Fiskebilde',photoPick:'LEGG TIL FISKEBILDE',camera:'Kamera',gallery:'Galleri',firstLoadHint:'første modellkjøring kan ta litt tid',cutting:'Fjerner bakgrunn…',loadingModel:'Laster AI-modell…',
-   cutDone:'KLISTREMERKE KLART',cutSimple:'Enkelt utklipp',cutAi:'AI-utklipp',keepOrig:'Behold original',retake:'Bytt bilde',cutFish:'Klipp ut fisken',cutFull:'Hele bildet',cropHint:'Ramme inn fisken og trykk «Klipp ut fisken»',eraseExtra:'Visk bort',erase:'Visk',restore:'Angre',reset:'Nullstill',
+   cutDone:'KLISTREMERKE KLART',cutSimple:'Enkelt utklipp',cutAi:'AI-utklipp',keepOrig:'Behold original',retake:'Bytt bilde',cutFish:'Klipp ut fisken',cutFull:'Hele bildet',cropHint:'Ramme inn fisken og trykk «Klipp ut fisken»',eraseExtra:'Visk bort',erase:'Visk',restore:'Angre',reset:'Nullstill',alreadyCut:'Bildet er allerede klippet — klistremerke klart',
    fName:'Art',fNamePh:'velg fra listen eller skriv egen',fSize:'Størrelse, cm',fQty:'Antall',fDate:'Dato & tid',
    fPlace:'Sted',fPlacePh:'sted eller koordinater',fMethod:'Metode / redskap',fMethodPh:'spinning, jigg…',fNote:'Notat',fNotePh:'historien…',
    cancel:'Avbryt',save:'Samle',needName:'Skriv arten',needPhoto:'Legg til bilde',
@@ -784,10 +784,14 @@ async function cropAndCut(full){showStudioLoading(t('cutting'),0.5);await new Pr
 function showStudioLoading(label,pct){const s=$('studio');s.classList.remove('empty-st');
   s.innerHTML=`<div class="checker"></div>${F.orig?`<img class="prev" src="${F.orig}" style="opacity:.4"/>`:''}<div class="ov"><div class="t">${label}</div><div class="pb"><i id="pbI" style="width:${Math.round((pct||0)*100)}%"></i></div><button id="ovSimple" style="margin-top:4px;font-family:'Space Mono';font-size:11px;color:var(--ink);border:1px solid var(--line2);padding:8px 14px;background:var(--panel2)">${t('cutSimple')}</button><div style="font-family:'Space Mono';font-size:9px;color:var(--mut);margin-top:2px;max-width:200px">${t('firstLoadHint')}</div></div>`;
   $('studioActs').style.display='none';const b=$('ovSimple');if(b)b.onclick=()=>{if(F.bmp)processSticker(F.bmp,'simple');};}
+function hasAlpha(bmp){try{const s=Math.min(1,90/Math.max(bmp.width,bmp.height));const c=document.createElement('canvas');c.width=Math.max(1,Math.round(bmp.width*s));c.height=Math.max(1,Math.round(bmp.height*s));const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(bmp,0,0,c.width,c.height);const d=x.getImageData(0,0,c.width,c.height).data;let tr=0,n=d.length/4;for(let i=3;i<d.length;i+=4)if(d[i]<240)tr++;return tr>n*0.02;}catch(e){return false;}}
 async function onPhotoPick(e){const file=e.target.files[0];if(!file)return;F.file=file;
   exifGPS(file).then(g=>{const pl=$('fPlace');if(g&&pl&&!pl.value.trim()){pl.value=g.lat.toFixed(4)+', '+g.lon.toFixed(4);const h=$('fGeoHint');if(h)h.textContent=t('gpsPhoto');}});
-  try{F.bmp=await loadBitmap(file);F.orig=bmpToDataURL(F.bmp,1000,'image/jpeg',.85);showCrop();}
-  catch(err){console.error(err);toast('—');bindStudioEmpty();}
+  try{F.bmp=await loadBitmap(file);
+    if(hasAlpha(F.bmp)){ // уже вырезано (PNG без фона из внешней нейросети) — сразу стикер
+      F.orig=bmpToDataURL(F.bmp,1000,'image/png');F.cut=toCanvas(F.bmp);F.stk=makeSticker(F.cut).toDataURL('image/png');showStudioResult(F.stk,t('cutDone'));toast(t('alreadyCut'));
+    }else{F.orig=bmpToDataURL(F.bmp,1000,'image/jpeg',.85);showCrop();}
+  }catch(err){console.error(err);toast('—');bindStudioEmpty();}
   e.target.value='';}
 async function processSticker(input,mode,bmp){
   try{
@@ -876,13 +880,15 @@ function smartCut(bmp,opt){
   for(let p=0;p<N;p++)d[p*4+3]=out[p];
   x.putImageData(img,0,0);return c;}
 function makeSticker(src,outline){let w=src.width,h=src.height;const s=Math.min(1,760/Math.max(w,h));w=Math.round(w*s);h=Math.round(h*s);
-  const m=outline||Math.max(8,Math.round(Math.max(w,h)*0.035)),pad=m+8,cw=w+pad*2,ch=h+pad*2;
+  const m=outline||Math.max(8,Math.round(Math.max(w,h)*0.035)),sh=Math.round(m*1.3),pad=m+8,cw=w+pad*2+sh,ch=h+pad*2+sh;
   const base=document.createElement('canvas');base.width=w;base.height=h;base.getContext('2d').drawImage(src,0,0,w,h);
   const off=document.createElement('canvas');off.width=cw;off.height=ch;const ox=off.getContext('2d');const steps=36;
   for(let i=0;i<steps;i++){const a=i/steps*Math.PI*2;ox.drawImage(base,pad+Math.cos(a)*m,pad+Math.sin(a)*m);}
   for(let i=0;i<steps;i++){const a=i/steps*Math.PI*2;ox.drawImage(base,pad+Math.cos(a)*m*.55,pad+Math.sin(a)*m*.55);}
   ox.globalCompositeOperation='source-in';ox.fillStyle='#fff';ox.fillRect(0,0,cw,ch);ox.globalCompositeOperation='source-over';
-  const out=document.createElement('canvas');out.width=cw;out.height=ch;const x=out.getContext('2d');x.drawImage(off,0,0);x.drawImage(base,pad,pad);return out;}
+  const out=document.createElement('canvas');out.width=cw;out.height=ch;const x=out.getContext('2d');
+  x.save();x.shadowColor='rgba(16,22,30,.5)';x.shadowBlur=sh;x.shadowOffsetY=Math.round(sh*0.45);x.drawImage(off,0,0);x.restore();
+  x.drawImage(off,0,0);x.drawImage(base,pad,pad);return out;}
 let _bgmod_loading=null;
 async function aiRemove(file,onP){
   if(!_bgmod_loading)_bgmod_loading=import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.6.0/+esm').catch(e=>{_bgmod_loading=null;throw e;});
