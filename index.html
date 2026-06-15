@@ -106,32 +106,27 @@ img{max-width:100%;display:block}
 @media(max-width:440px){.grid{grid-template-columns:repeat(2,1fr);gap:11px}}
 .item,.dexi{cursor:pointer;animation:pop .5s var(--spring) both;animation-delay:var(--d,0s)}
 @keyframes pop{0%{opacity:0;transform:translateY(18px)}100%{opacity:1;transform:none}}
-.frame{position:relative;aspect-ratio:.86;overflow:hidden;display:grid;place-items:center;padding:16px;
-  background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(20,28,36,.18));border:1px solid var(--line);
-  transition:transform .35s var(--spring),border-color .3s,box-shadow .3s;
-  clip-path:polygon(0 0,calc(100% - var(--notch)) 0,100% var(--notch),100% 100%,var(--notch) 100%,0 calc(100% - var(--notch)))}
-.item:active .frame,.dexi:active .frame{transform:scale(.96)}
-@media(hover:hover){.item:hover .frame,.dexi:hover .frame{transform:translateY(-5px);border-color:var(--line2);box-shadow:0 20px 38px rgba(20,28,36,.4)}}
+/* frameless — sticker floats directly on background (like reference) */
+.frame{position:relative;aspect-ratio:.96;display:grid;place-items:center;padding:6px;background:none;border:0;transition:transform .35s var(--spring)}
+.item:active .frame,.dexi:active .frame{transform:scale(.94)}
+@media(hover:hover){.item:hover .frame,.dexi:hover .frame{transform:translateY(-6px) scale(1.04)}}
 .frame .num{position:absolute;top:9px;left:11px;font-family:'Space Mono';font-size:10px;color:var(--mut);z-index:3}
 .frame .dot{position:absolute;top:11px;right:11px;width:9px;height:9px;border-radius:50%;background:var(--rc);z-index:3;box-shadow:0 0 0 3px rgba(20,28,36,.22)}
-.frame .stk{width:92%;max-height:82%;object-fit:contain;filter:drop-shadow(0 10px 16px rgba(20,28,36,.5));transition:transform .4s var(--spring)}
+.frame .stk{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 8px 14px rgba(16,22,30,.45));transition:transform .4s var(--spring)}
 @media(hover:hover){.item:hover .stk{transform:translateY(-4px) scale(1.03)}}
-.frame .art{width:86%;color:#e7eef2}
+.frame .art{width:88%;color:#e7eef2;filter:drop-shadow(0 8px 14px rgba(16,22,30,.4))}
 .frame .troph{position:absolute;bottom:10px;right:11px;z-index:3;width:16px;height:16px;color:var(--gold);filter:drop-shadow(0 2px 5px rgba(0,0,0,.4))}
 .frame .troph svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.8}
 .frame .sheen{position:absolute;inset:0;background:linear-gradient(115deg,transparent 38%,rgba(255,255,255,.26) 50%,transparent 62%);transform:translateX(-120%)}
 .item:active .sheen{animation:sheen 1s var(--ease)}
 @keyframes sheen{to{transform:translateX(120%)}}
 /* locked dex entry */
-.dexi.locked .art{opacity:.18;filter:brightness(0) invert(.85)}
-.dexi.locked .frame{background:repeating-linear-gradient(135deg,rgba(255,255,255,.04) 0 9px,transparent 9px 18px),rgba(20,28,36,.14)}
-.dexi.locked .frame::after{content:"?";position:absolute;inset:0;display:grid;place-items:center;font-family:'Anton';font-size:50px;color:rgba(255,255,255,.1)}
-.dexi[data-r="legendary"] .frame::before,.dexi[data-r="epic"] .frame::before,.item[data-r="legendary"] .frame::before,.item[data-r="epic"] .frame::before{
-  content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(130deg,transparent 30%,rgba(216,201,168,.16) 45%,rgba(106,160,224,.12) 55%,transparent 70%);mix-blend-mode:screen;animation:irid 6s ease-in-out infinite}
-@keyframes irid{50%{transform:translateX(7%) translateY(4%)}}
-.cap{padding:9px 4px 2px}
-.cap .nm{font-family:'Oswald';font-weight:600;text-transform:uppercase;font-size:13.5px;color:var(--ink);letter-spacing:.03em;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cap .meta{display:flex;flex-wrap:wrap;gap:3px 8px;margin-top:5px;font-family:'Space Mono';font-size:10px;color:var(--cap)}
+.dexi.locked .art{opacity:.16;filter:brightness(0) invert(.82)}
+.dexi.locked .frame::after{content:"?";position:absolute;inset:0;display:grid;place-items:center;font-family:'Anton';font-size:46px;color:rgba(255,255,255,.12)}
+.cap{padding:8px 4px 2px;text-align:center}
+.cap .no{font-family:'Space Mono';font-size:9.5px;color:var(--mut);letter-spacing:.06em}
+.cap .nm{font-family:'Oswald';font-weight:600;text-transform:uppercase;font-size:13.5px;color:var(--ink);letter-spacing:.03em;line-height:1.1;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cap .meta{display:flex;justify-content:center;flex-wrap:wrap;gap:3px 8px;margin-top:4px;font-family:'Space Mono';font-size:10px;color:var(--cap)}
 .cap .meta .rk{color:var(--rc)}
 .cap .meta .big{color:var(--ink)}
 .dexi.locked .cap .nm{color:var(--mut)}
@@ -346,7 +341,7 @@ img{max-width:100%;display:block}
 
 <script>
 "use strict";
-const APP_VERSION='3.2.1';
+const APP_VERSION='3.3.0';
 const $=id=>document.getElementById(id);
 const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
 const TROPHY_SVG=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4.5V8A3 3 0 0 0 7 11M17 6h2.5V8a3 3 0 0 1-2.5 3"/></svg>`;
@@ -559,11 +554,8 @@ function dexEl(d,k){
   const disc=isDiscovered(d.id),best=bestLenSpecies(d.id);
   const node=el('div','dexi'+(disc?'':' locked'));node.dataset.r=d.rar;node.style.setProperty('--rc',RCOL[d.rar]);node.style.setProperty('--d',(k*0.035)+'s');
   node.tabIndex=0;node.setAttribute('role','button');node.setAttribute('aria-label',disc?dexName(d):t('notDiscovered'));
-  node.innerHTML=`<div class="frame">
-      <div class="num mono">№${String(dexNum(d.id)).padStart(3,'0')}</div><div class="dot"></div>
-      <div class="art">${FISH[d.sil]||''}</div>
-    </div>
-    <div class="cap"><div class="nm">${disc?dexName(d):'?????'}</div>
+  node.innerHTML=`<div class="frame"><div class="art">${FISH[d.sil]||''}</div></div>
+    <div class="cap"><div class="no mono">№${String(dexNum(d.id)).padStart(3,'0')}</div><div class="nm">${disc?dexName(d):'?????'}</div>
       <div class="meta"><span class="rk">● ${rarLabel(d.rar)}</span>${disc&&best?`<span class="big">${best} ${unit()}</span>`:''}</div></div>`;
   const open=()=>openSpecies(d);
   node.addEventListener('click',open);node.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}});
@@ -586,10 +578,9 @@ function catchEl(c,i){
   const stk=(IMG[c.id]&&IMG[c.id].stk)||'';
   const meta=[(+c.L?`<span class="big">${c.L} ${unit()}</span>`:''),(c.place?`<span>${esc(shortPlace(c.place))}</span>`:''),(c.ts?`<span>${fmtDate(c.ts)}</span>`:'')].filter(Boolean).join('');
   node.innerHTML=`<div class="frame">
-      <div class="num mono">№${String(c.no||i+1).padStart(3,'0')}</div><div class="dot"></div>
       ${stk?`<img class="stk" src="${stk}" alt="${esc(c.name)}"/>`:`<div class="art" style="opacity:.5">${FISH[(c.sid&&dexById(c.sid)&&dexById(c.sid).sil)||'treska']}</div>`}
-      ${isTrophy(c)?`<div class="troph">${TROPHY_SVG}</div>`:''}<div class="sheen"></div></div>
-    <div class="cap"><div class="nm">${esc(c.name)}</div><div class="meta"><span class="rk">● ${rarLabel(r)}</span>${meta}</div></div>`;
+      ${isTrophy(c)?`<div class="troph">${TROPHY_SVG}</div>`:''}</div>
+    <div class="cap"><div class="no mono">№${String(c.no||i+1).padStart(3,'0')}</div><div class="nm">${esc(c.name)}</div><div class="meta"><span class="rk">● ${rarLabel(r)}</span>${meta}</div></div>`;
   node.addEventListener('click',()=>openCatch(c));node.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openCatch(c);}});
   return node;
 }
