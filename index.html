@@ -238,6 +238,12 @@ img{max-width:100%;display:block}
 .studio .pickrow button.alt{background:var(--panel);color:var(--ink);border:1px solid var(--line2)}
 .studio .pickrow button svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8}
 .studio .pickrow button:active{transform:scale(.95)}
+.croparea{position:relative;display:inline-block;max-width:100%;line-height:0}
+.croparea img{max-width:100%;max-height:300px;display:block}
+.crophint{font-family:'Space Mono';font-size:11px;color:var(--cap);text-align:center;padding:10px 8px 8px}
+.crop{position:absolute;border:2px solid #fff;box-shadow:0 0 0 9999px rgba(20,28,36,.55);cursor:move;touch-action:none;box-sizing:border-box}
+.crop::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.35) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.35) 1px,transparent 1px);background-size:33.33% 33.33%}
+.crop .br{position:absolute;right:-12px;bottom:-12px;width:26px;height:26px;background:#fff;border:2px solid var(--b3);border-radius:50%;cursor:nwse-resize;touch-action:none}
 .studio .checker{position:absolute;inset:0;background-image:linear-gradient(45deg,rgba(255,255,255,.06) 25%,transparent 25%,transparent 75%,rgba(255,255,255,.06) 75%),linear-gradient(45deg,rgba(255,255,255,.06) 25%,transparent 25%,transparent 75%,rgba(255,255,255,.06) 75%);background-size:22px 22px;background-position:0 0,11px 11px;opacity:.5}
 .studio .prev{position:relative;z-index:2;max-height:260px;width:auto;object-fit:contain;padding:12px;filter:drop-shadow(0 12px 18px rgba(20,28,36,.5))}
 .studio .ov{position:absolute;inset:0;z-index:3;background:rgba(20,28,36,.55);display:grid;place-content:center;text-align:center;gap:12px}
@@ -334,7 +340,7 @@ img{max-width:100%;display:block}
 
 <script>
 "use strict";
-const APP_VERSION='3.0.2';
+const APP_VERSION='3.1.0';
 const $=id=>document.getElementById(id);
 const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
 const TROPHY_SVG=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4.5V8A3 3 0 0 0 7 11M17 6h2.5V8a3 3 0 0 1-2.5 3"/></svg>`;
@@ -413,7 +419,7 @@ const I18N={
    share:'Поделиться',done:'Готово',shareFallback:'Стикер скачан — прикрепи его',
    formTitle:'Новый улов',formSub:'[ фото → вырезка фона → стикер ]',
    fPhoto:'Фото рыбы',photoPick:'ДОБАВЬ ФОТО РЫБЫ',camera:'Камера',gallery:'Галерея',firstLoadHint:'первый запуск модели может занять время',cutting:'Вырезаю фон…',loadingModel:'Загружаю ИИ-модель…',
-   cutDone:'СТИКЕР ГОТОВ',cutSimple:'Простая вырезка',cutAi:'ИИ-вырезка',keepOrig:'Без вырезки',retake:'Заменить фото',
+   cutDone:'СТИКЕР ГОТОВ',cutSimple:'Простая вырезка',cutAi:'ИИ-вырезка',keepOrig:'Без вырезки',retake:'Заменить фото',cutFish:'Вырезать рыбу',cutFull:'Весь кадр',cropHint:'Наведи рамку на рыбу и нажми «Вырезать рыбу»',
    fName:'Вид рыбы',fNamePh:'выбери из списка или впиши свой',fSize:'Размер, см',fQty:'Количество',fDate:'Дата и время',
    fPlace:'Место',fPlacePh:'точка или координаты',fMethod:'Способ / снасть',fMethodPh:'спиннинг, джиг…',fNote:'Заметка',fNotePh:'история поимки…',
    cancel:'Отмена',save:'В коллекцию',needName:'Укажи вид рыбы',needPhoto:'Добавь фото',
@@ -436,7 +442,7 @@ const I18N={
    share:'Share',done:'Done',shareFallback:'Sticker downloaded — attach it',
    formTitle:'New catch',formSub:'[ photo → cut out → sticker ]',
    fPhoto:'Fish photo',photoPick:'ADD A FISH PHOTO',camera:'Camera',gallery:'Gallery',firstLoadHint:'first model run may take a moment',cutting:'Removing background…',loadingModel:'Loading AI model…',
-   cutDone:'STICKER READY',cutSimple:'Simple cutout',cutAi:'AI cutout',keepOrig:'Keep original',retake:'Replace photo',
+   cutDone:'STICKER READY',cutSimple:'Simple cutout',cutAi:'AI cutout',keepOrig:'Keep original',retake:'Replace photo',cutFish:'Cut the fish',cutFull:'Whole frame',cropHint:'Frame the fish and tap “Cut the fish”',
    fName:'Species',fNamePh:'pick from list or type your own',fSize:'Size, cm',fQty:'Quantity',fDate:'Date & time',
    fPlace:'Place',fPlacePh:'spot or coordinates',fMethod:'Method / tackle',fMethodPh:'spinning, jig…',fNote:'Note',fNotePh:'the story…',
    cancel:'Cancel',save:'Collect',needName:'Enter the species',needPhoto:'Add a photo',
@@ -459,7 +465,7 @@ const I18N={
    share:'Del',done:'Ferdig',shareFallback:'Klistremerke lastet ned — legg det ved',
    formTitle:'Ny fangst',formSub:'[ bilde → utklipp → klistremerke ]',
    fPhoto:'Fiskebilde',photoPick:'LEGG TIL FISKEBILDE',camera:'Kamera',gallery:'Galleri',firstLoadHint:'første modellkjøring kan ta litt tid',cutting:'Fjerner bakgrunn…',loadingModel:'Laster AI-modell…',
-   cutDone:'KLISTREMERKE KLART',cutSimple:'Enkelt utklipp',cutAi:'AI-utklipp',keepOrig:'Behold original',retake:'Bytt bilde',
+   cutDone:'KLISTREMERKE KLART',cutSimple:'Enkelt utklipp',cutAi:'AI-utklipp',keepOrig:'Behold original',retake:'Bytt bilde',cutFish:'Klipp ut fisken',cutFull:'Hele bildet',cropHint:'Ramme inn fisken og trykk «Klipp ut fisken»',
    fName:'Art',fNamePh:'velg fra listen eller skriv egen',fSize:'Størrelse, cm',fQty:'Antall',fDate:'Dato & tid',
    fPlace:'Sted',fPlacePh:'sted eller koordinater',fMethod:'Metode / redskap',fMethodPh:'spinning, jigg…',fNote:'Notat',fNotePh:'historien…',
    cancel:'Avbryt',save:'Samle',needName:'Skriv arten',needPhoto:'Legg til bilde',
@@ -693,7 +699,7 @@ function openForm(presetName){
         <div class="studio empty-st" id="studio"></div>
         <input id="fCam" type="file" accept="image/*" capture="environment" hidden/>
         <input id="fGal" type="file" accept="image/*" hidden/>
-        <div class="studio-acts" id="studioActs" style="display:none"><button id="aRetake">${t('retake')}</button><button id="aAi">${t('cutAi')}</button><button id="aKeep">${t('keepOrig')}</button></div></div>
+        <div class="studio-acts" id="studioActs" style="display:none"></div></div>
       <div class="field"><label>${t('fName')}</label><input id="fName" list="namelist" value="${presetName?esc(presetName):''}" placeholder="${t('fNamePh')}"/><datalist id="namelist">${datal}</datalist></div>
       <div class="two"><div class="field"><label>${t('fSize')}</label><input id="fL" type="number" inputmode="decimal" min="0" placeholder="—"/></div>
         <div class="field"><label>${t('fQty')}</label><input id="fQ" type="number" min="1" value="1"/></div></div>
@@ -706,9 +712,6 @@ function openForm(presetName){
   openSheet('formSheet');$('formSheet').scrollTop=0;
   bindStudioEmpty();
   $('fCam').onchange=onPhotoPick;$('fGal').onchange=onPhotoPick;$('fGeo').onclick=getGeo;$('fSave').onclick=saveCatch;
-  $('aRetake').onclick=bindStudioEmpty;
-  $('aAi').onclick=()=>{if(F.file||F.bmp)processSticker(F.file||F.bmp,'ai');};
-  $('aKeep').onclick=()=>{if(F.bmp){F.stk=bmpToDataURL(F.bmp,760,'image/png');showStudio(F.stk,'ORIGINAL');}};
   $('formContent').querySelectorAll('[data-close]').forEach(b=>b.onclick=closeSheets);
 }
 function studioEmptyHTML(){return `<svg viewBox="0 0 24 24"><path d="M3 7h4l2-3h6l2 3h4v13H3z"/><circle cx="12" cy="13" r="4"/></svg><div class="t">${t('photoPick')}</div>
@@ -719,21 +722,53 @@ function studioEmptyHTML(){return `<svg viewBox="0 0 24 24"><path d="M3 7h4l2-3h
 function bindStudioEmpty(){const s=$('studio');s.className='studio empty-st';s.innerHTML=studioEmptyHTML();const a=$('studioActs');if(a)a.style.display='none';
   $('pCam').onclick=ev=>{ev.stopPropagation();$('fCam').click();};$('pGal').onclick=ev=>{ev.stopPropagation();$('fGal').click();};}
 function showStudio(src,badge){const s=$('studio');s.classList.remove('empty-st');s.innerHTML=`<div class="checker"></div><img class="prev" src="${src}"/>${badge?`<div class="badge mono">${badge}</div>`:''}`;$('studioActs').style.display='flex';}
+function setActs(html){const a=$('studioActs');if(!a)return;a.style.display='flex';a.innerHTML=html;}
+function showStudioResult(src,badge){showStudio(src,badge);
+  setActs(`<button id="aRetake">${t('retake')}</button><button id="aAi">${t('cutAi')}</button><button id="aKeep">${t('keepOrig')}</button>`);
+  $('aRetake').onclick=bindStudioEmpty;
+  $('aAi').onclick=()=>{if(F.file||F.bmp)processSticker(F.file||F.bmp,'ai');};
+  $('aKeep').onclick=()=>{if(F.bmp){F.stk=bmpToDataURL(F.bmp,760,'image/png');showStudioResult(F.stk,'ORIGINAL');}};}
+// crop step — frame the fish, then cut inside the frame
+function showCrop(){const s=$('studio');s.classList.remove('empty-st');
+  s.innerHTML=`<div style="width:100%"><div class="crophint">${t('cropHint')}</div><div class="croparea" id="croparea"><img id="cropImg" src="${F.orig}" alt=""/><div class="crop" id="cropBox"><span class="br"></span></div></div></div>`;
+  setActs(`<button id="aRetake">${t('retake')}</button><button id="aFull">${t('cutFull')}</button><button id="aCut">${t('cutFish')}</button>`);
+  $('aRetake').onclick=bindStudioEmpty;$('aFull').onclick=()=>cropAndCut(true);$('aCut').onclick=()=>cropAndCut(false);
+  const img=$('cropImg');if(img.complete)initCropBox();else img.onload=initCropBox;}
+function initCropBox(){const img=$('cropImg'),box=$('cropBox');if(!img||!box)return;
+  const W=img.clientWidth,H=img.clientHeight,bw=W*0.62,bh=H*0.62;
+  box.style.left=(W-bw)/2+'px';box.style.top=(H-bh)/2+'px';box.style.width=bw+'px';box.style.height=bh+'px';
+  let mode=null,px0,py0,ox,oy,ow,oh;
+  const down=(e,m)=>{mode=m;px0=e.clientX;py0=e.clientY;ox=box.offsetLeft;oy=box.offsetTop;ow=box.offsetWidth;oh=box.offsetHeight;e.preventDefault();e.stopPropagation();};
+  const move=e=>{if(!mode)return;const dx=e.clientX-px0,dy=e.clientY-py0,Wc=img.clientWidth,Hc=img.clientHeight;
+    if(mode==='move'){box.style.left=Math.min(Math.max(0,ox+dx),Wc-ow)+'px';box.style.top=Math.min(Math.max(0,oy+dy),Hc-oh)+'px';}
+    else{box.style.width=Math.min(Math.max(40,ow+dx),Wc-box.offsetLeft)+'px';box.style.height=Math.min(Math.max(40,oh+dy),Hc-box.offsetTop)+'px';}};
+  const up=()=>{mode=null;};
+  box.addEventListener('pointerdown',e=>{if(!e.target.classList.contains('br'))down(e,'move');});
+  box.querySelector('.br').addEventListener('pointerdown',e=>down(e,'resize'));
+  window.addEventListener('pointermove',move);window.addEventListener('pointerup',up);}
+function cropRectPx(){const img=$('cropImg'),box=$('cropBox');if(!img||!box)return null;
+  const ir=img.getBoundingClientRect(),br=box.getBoundingClientRect();const sc=img.naturalWidth/ir.width;
+  return {sx:Math.max(0,(br.left-ir.left)*sc),sy:Math.max(0,(br.top-ir.top)*sc),sw:Math.min(br.width*sc,img.naturalWidth),sh:Math.min(br.height*sc,img.naturalHeight)};}
+async function cropAndCut(full){showStudioLoading(t('cutting'),0.5);await new Promise(r=>setTimeout(r,24));
+  let src=F.bmp;
+  if(!full){const r=cropRectPx();if(r&&r.sw>=8&&r.sh>=8){const cv=document.createElement('canvas');cv.width=Math.round(r.sw);cv.height=Math.round(r.sh);cv.getContext('2d').drawImage(F.bmp,r.sx,r.sy,r.sw,r.sh,0,0,cv.width,cv.height);src=cv;}}
+  try{const cut=smartCut(src,{tol:54});F.stk=makeSticker(cut).toDataURL('image/png');showStudioResult(F.stk,t('cutDone'));}
+  catch(e){console.error(e);F.stk=bmpToDataURL(F.bmp,760,'image/png');showStudioResult(F.stk,'ORIGINAL');}}
 function showStudioLoading(label,pct){const s=$('studio');s.classList.remove('empty-st');
   s.innerHTML=`<div class="checker"></div>${F.orig?`<img class="prev" src="${F.orig}" style="opacity:.4"/>`:''}<div class="ov"><div class="t">${label}</div><div class="pb"><i id="pbI" style="width:${Math.round((pct||0)*100)}%"></i></div><button id="ovSimple" style="margin-top:4px;font-family:'Space Mono';font-size:11px;color:var(--ink);border:1px solid var(--line2);padding:8px 14px;background:var(--panel2)">${t('cutSimple')}</button><div style="font-family:'Space Mono';font-size:9px;color:var(--mut);margin-top:2px;max-width:200px">${t('firstLoadHint')}</div></div>`;
   $('studioActs').style.display='none';const b=$('ovSimple');if(b)b.onclick=()=>{if(F.bmp)processSticker(F.bmp,'simple');};}
-async function onPhotoPick(e){const file=e.target.files[0];if(!file)return;F.file=file;showStudioLoading(t('cutting'),0.5);
+async function onPhotoPick(e){const file=e.target.files[0];if(!file)return;F.file=file;
   exifGPS(file).then(g=>{const pl=$('fPlace');if(g&&pl&&!pl.value.trim()){pl.value=g.lat.toFixed(4)+', '+g.lon.toFixed(4);const h=$('fGeoHint');if(h)h.textContent=t('gpsPhoto');}});
-  try{F.bmp=await loadBitmap(file);F.orig=bmpToDataURL(F.bmp,1000,'image/jpeg',.85);await processSticker(F.bmp,'simple');}
-  catch(err){console.error(err);try{F.bmp=F.bmp||await loadBitmap(file);F.stk=bmpToDataURL(F.bmp,760,'image/png');showStudio(F.stk,'ORIGINAL');}catch(e2){toast('—');}}
+  try{F.bmp=await loadBitmap(file);F.orig=bmpToDataURL(F.bmp,1000,'image/jpeg',.85);showCrop();}
+  catch(err){console.error(err);toast('—');bindStudioEmpty();}
   e.target.value='';}
 async function processSticker(input,mode,bmp){
   try{
     if(mode==='ai'){showStudioLoading(t('loadingModel'),0.05);
       const cut=await aiRemove(input,p=>{const i=$('pbI');if(i)i.style.width=Math.round((0.05+p*0.9)*100)+'%';const lab=document.querySelector('#studio .ov .t');if(lab)lab.textContent=t('cutting')+' '+Math.round(p*100)+'%';});
-      F.stk=makeSticker(cut).toDataURL('image/png');showStudio(F.stk,'AI · '+t('cutDone'));
-    }else{showStudioLoading(t('cutting'),0.5);await new Promise(r=>setTimeout(r,16));const cut=smartCut(bmp||F.bmp,{tol:54});F.stk=makeSticker(cut).toDataURL('image/png');showStudio(F.stk,t('cutDone'));}
-  }catch(err){console.error(err);if(mode==='ai'){toast(t('aiUnavailable'));return processSticker(F.bmp,'simple');}F.stk=bmpToDataURL(F.bmp,760,'image/png');showStudio(F.stk,'ORIGINAL');}
+      F.stk=makeSticker(cut).toDataURL('image/png');showStudioResult(F.stk,'AI · '+t('cutDone'));
+    }else{showStudioLoading(t('cutting'),0.5);await new Promise(r=>setTimeout(r,16));const cut=smartCut(bmp||F.bmp,{tol:54});F.stk=makeSticker(cut).toDataURL('image/png');showStudioResult(F.stk,t('cutDone'));}
+  }catch(err){console.error(err);if(mode==='ai'){toast(t('aiUnavailable'));return processSticker(F.bmp,'simple');}F.stk=bmpToDataURL(F.bmp,760,'image/png');showStudioResult(F.stk,'ORIGINAL');}
 }
 function getGeo(){const hint=$('fGeoHint');if(!navigator.geolocation){hint.textContent=t('gpsNo');return;}hint.textContent=t('gpsWait');
   navigator.geolocation.getCurrentPosition(p=>{$('fPlace').value=`${p.coords.latitude.toFixed(4)}, ${p.coords.longitude.toFixed(4)}`;hint.textContent=t('gpsOk');},()=>{hint.textContent=t('gpsFail');},{enableHighAccuracy:true,timeout:8000});}

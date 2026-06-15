@@ -1,7 +1,7 @@
 /* FISH COLLECTOR service worker — офлайн-кэш статики, свежий HTML из сети.
    ВАЖНО: при каждом релизе бампать V и APP_VERSION (index.html) синхронно,
    иначе пользователь застрянет на старой версии из кэша (скил bump-version). */
-const V = 'fishcollector-v3.0.2';
+const V = 'fishcollector-v3.1.0';
 const ASSETS = ['./', './index.html', './manifest.json', './icon.svg', './logo.png'];
 
 self.addEventListener('install', e => {
