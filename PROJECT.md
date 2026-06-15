@@ -20,9 +20,17 @@ PWA для коллекционирования **личных поимок лю
 - Дизайн `:root`: фон-градиент `--b0..--b3`, `--ink #f2f6f8`, `--gold #d8c9a8`; анимации `--spring`/`--ease`.
 - Шрифты: Anton (мега), Oswald (лейблы), Archivo (текст), Space Mono (данные/бирки).
 
+## 0. Модель v3 (Gotcha-like)
+- **Индекс (DEX)** — предзаданный каталог видов рыб (`DEX[]`: id, n{ru,en,no}, lat, col, rar, sil). Запертые силуэты `?????`, открываются при поимке (по совпадению имени/латыни через `resolveDex`). Коллекции `col`: salt/deep/fresh/game. Редкость `rar`: common→legendary (`RCOL`/`RW`).
+- **Коллекция** — главная страница: реальные вырезки-стикеры пользователя, сортировка по значимости (редкость→размер), также свежие/размер/вид.
+- **Нав**: Индекс · камера(+) · Коллекция (`#nav`, `setView`).
+- **Карточка «ПОЙМАНО»** (`celebrate`) с редкостью/латынью + **Поделиться** (`shareCatch`, Web Share API с файлом-стикером, фолбэк — скачивание).
+- **EXIF GPS** (`exifGPS`) — координаты берутся из геоданных фото, если есть; иначе кнопка GPS.
+- Вырезка фона не зависает: таймаут 45с + кнопка «простая вырезка» в процессе + гарантированный фолбэк (flood-fill / оригинал).
+
 ## 3. Хранилище
-- **localStorage** `fishcollector_catches_v2` — массив метаданных:
-  `[{id, name, lang, L(см), qty, ts(мс), place, lat?, lon?, method, note, hasPhoto}]`.
+- **localStorage** `fishcollector_catches_v3` — массив метаданных:
+  `[{id, no, sid(id вида из DEX|null), name, lang, L(см), qty, ts(мс), place, lat?, lon?, method, note, hasPhoto}]`.
 - **IndexedDB** `fishcollector` → store `img` (ключ→dataURL): `stk_<id>` (стикер PNG, прозрачный, вырезка+обводка),
   `org_<id>` (оригинал JPEG ~1000px). Картинки в IDB, т.к. localStorage мал для фото.
 - `fishcollector_lang` — выбранный язык.

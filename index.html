@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1"/>
-<title>FISH COLLECTOR™ — sticker your catch</title>
-<meta name="description" content="Поймал рыбу — сфоткал — получил стикер. Приложение вырезает фон и делает die-cut наклейку с именем, размером, местом и датой. Скачивай и заказывай наклейки. PWA."/>
+<title>FISH COLLECTOR™ — catch it · collect it</title>
+<meta name="description" content="Реальный индекс рыб. Поймал — сфоткал — приложение вырезает фон и делает die-cut стикер. Заполняй индекс видов, собирай редкости, делись уловом. PWA."/>
 <meta name="theme-color" content="#566472"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
@@ -17,14 +17,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600;700&family=Archivo:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
 <style>
 :root{
-  --b0:#8a98a5; --b1:#6f7e8c; --b2:#56636f; --b3:#3f4a55;
-  --ink:#f2f6f8; --ink2:#e2e8ec; --mut:#b8c4cd; --cap:#d6dee4;
-  --line:rgba(255,255,255,.16); --line2:rgba(255,255,255,.28);
-  --panel:rgba(28,38,48,.22); --panel2:rgba(20,28,36,.4);
+  --b0:#8a98a5;--b1:#6f7e8c;--b2:#56636f;--b3:#3f4a55;
+  --ink:#f2f6f8;--ink2:#e2e8ec;--mut:#b8c4cd;--cap:#d6dee4;
+  --line:rgba(255,255,255,.16);--line2:rgba(255,255,255,.28);
+  --panel:rgba(28,38,48,.22);--panel2:rgba(20,28,36,.4);
   --gold:#d8c9a8;
-  --spring:cubic-bezier(.34,1.56,.64,1); --ease:cubic-bezier(.22,.61,.36,1);
-  --safe-t:env(safe-area-inset-top,0px); --safe-b:env(safe-area-inset-bottom,0px);
-  --notch:14px;
+  --rc-common:#9fb0bc;--rc-uncommon:#5fd39a;--rc-rare:#6aa0e0;--rc-epic:#b58fe0;--rc-legendary:#d8c9a8;
+  --spring:cubic-bezier(.34,1.56,.64,1);--ease:cubic-bezier(.22,.61,.36,1);
+  --safe-t:env(safe-area-inset-top,0px);--safe-b:env(safe-area-inset-bottom,0px);--notch:14px;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%}
@@ -35,9 +35,9 @@ body{background:var(--b1);color:var(--ink2);font-family:'Archivo',system-ui,sans
 button{font-family:inherit;color:inherit;cursor:pointer;border:0;background:none}
 img{max-width:100%;display:block}
 ::selection{background:var(--ink);color:var(--b2)}
-:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:1px}
-.item:focus-visible{outline:none}
-.item:focus-visible .frame{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink)}
+:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.item:focus-visible,.dexi:focus-visible{outline:none}
+.item:focus-visible .frame,.dexi:focus-visible .frame{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink)}
 
 /* backdrop */
 .env{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
@@ -46,7 +46,6 @@ img{max-width:100%;display:block}
 .env .mtn{position:absolute;left:0;right:0;bottom:0;background:no-repeat bottom/cover}
 .env .m1{height:60vh;opacity:.3;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 400' preserveAspectRatio='none'%3E%3Cpath d='M0 400V230L160 120l120 70 130-120 150 150 120-80 160 130 110-60 140 90v170Z' fill='%233f4a55'/%3E%3C/svg%3E")}
 .env .m2{height:40vh;opacity:.42;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 300' preserveAspectRatio='none'%3E%3Cpath d='M0 300V200L120 150l140 60 120-90 160 120 130-70 150 100 120-50 110 70v110Z' fill='%2335404a'/%3E%3C/svg%3E")}
-.env .grain{position:absolute;inset:0;opacity:.05;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E")}
 .bubbles{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
 .bubble{position:absolute;bottom:-8vh;border-radius:50%;background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.5),rgba(255,255,255,.04) 60%,transparent 70%);border:1px solid rgba(255,255,255,.16);animation:rise linear infinite}
 @keyframes rise{0%{transform:translateY(0);opacity:0}12%{opacity:.45}88%{opacity:.35}100%{transform:translateY(-116vh) translateX(var(--dx,0));opacity:0}}
@@ -68,113 +67,95 @@ img{max-width:100%;display:block}
 @keyframes upFade{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)}}
 
 /* shell */
-#app{position:relative;z-index:2;max-width:1280px;margin:0 auto;padding:calc(16px + var(--safe-t)) clamp(14px,3.5vw,40px) calc(40px + var(--safe-b));opacity:0;transition:opacity .7s .2s}
+#app{position:relative;z-index:2;max-width:1180px;margin:0 auto;padding:calc(14px + var(--safe-t)) clamp(14px,3.5vw,34px) calc(120px + var(--safe-b));opacity:0;transition:opacity .7s .2s}
 #app.in{opacity:1}
-.top{display:flex;align-items:center;gap:14px;padding:6px 0 18px;border-bottom:1px solid var(--line);margin-bottom:26px}
+.top{display:flex;align-items:center;gap:14px;padding:4px 0 16px;border-bottom:1px solid var(--line);margin-bottom:18px}
 .brand{display:flex;align-items:center;gap:11px;min-width:0}
-.brand .mk{width:38px;height:38px;flex:none;display:grid;place-items:center;color:#f2f6f8;background:var(--panel2);border:1px solid var(--line2);clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px))}
-.brand .mk svg{width:26px}
-.brand .mk img{width:30px;height:auto}
-.brand b{font-family:'Anton';font-size:20px;color:var(--ink);letter-spacing:.02em;line-height:1}
+.brand .mk{width:40px;height:40px;flex:none;display:grid;place-items:center}
+.brand .mk img{width:38px;height:auto}
+.brand b{font-family:'Anton';font-size:19px;color:var(--ink);letter-spacing:.02em;line-height:1}
 .brand sup{font-family:'Space Mono';font-size:9px;color:var(--mut);top:-.8em}
 .top .sp{flex:1}
 .lang{display:flex;border:1px solid var(--line2);clip-path:polygon(0 0,calc(100% - 7px) 0,100% 7px,100% 100%,7px 100%,0 calc(100% - 7px))}
 .lang button{font-family:'Space Mono';font-size:11px;padding:8px 9px;color:var(--mut);transition:.2s}
 .lang button.on{background:var(--ink);color:var(--b3)}
-.oct{width:42px;height:42px;flex:none;display:grid;place-items:center;background:var(--panel);border:1px solid var(--line2);clip-path:polygon(26% 0,74% 0,100% 26%,100% 74%,74% 100%,26% 100%,0 74%,0 26%);transition:.2s}
-.oct:active{transform:scale(.9)}
-.oct svg{width:19px;height:19px;stroke:var(--ink);fill:none;stroke-width:1.7}
 
-/* hero */
-.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:30px;align-items:end;margin-bottom:30px}
-.hero .kick{font-family:'Space Mono';font-size:10.5px;letter-spacing:.2em;color:var(--cap);margin-bottom:14px;display:flex;gap:14px;flex-wrap:wrap}
-.hero h1{font-family:'Anton';font-size:clamp(40px,7.4vw,100px);color:var(--ink);margin:0}
-.hero h1 .gh{color:transparent;-webkit-text-stroke:1.4px rgba(242,246,248,.55)}
-.hero .blurb{max-width:44ch;color:var(--cap);font-size:14px;line-height:1.6;margin:18px 0 22px}
-.cta{display:inline-flex;align-items:center;gap:14px}
-.cta .o{width:62px;height:62px;display:grid;place-items:center;background:var(--ink);color:var(--b3);clip-path:polygon(26% 0,74% 0,100% 26%,100% 74%,74% 100%,26% 100%,0 74%,0 26%);transition:.25s var(--spring)}
-.cta:active .o{transform:scale(.9) rotate(-8deg)}
-.cta .o svg{width:24px;height:24px;stroke:var(--b3);stroke-width:2.2;fill:none}
-.cta .ct b{display:block;font-family:'Oswald';font-weight:600;text-transform:uppercase;letter-spacing:.06em;font-size:15px;color:var(--ink)}
-.cta .ct small{font-family:'Space Mono';font-size:10px;color:var(--mut)}
-/* signature: the user's own die-cut sticker on a lit stage = the hero thesis */
-.stage{position:relative;display:grid;place-items:center;min-height:320px;padding:24px;
-  background:radial-gradient(120% 100% at 50% 8%,rgba(255,255,255,.14),transparent 58%);
-  border:1px solid var(--line);clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,20px 100%,0 calc(100% - 20px))}
-.stage .glow{position:absolute;width:66%;height:56%;top:16%;left:17%;border-radius:50%;
-  background:radial-gradient(closest-side,rgba(216,201,168,.3),rgba(127,168,216,.16),transparent);filter:blur(26px);animation:pulse 6s ease-in-out infinite}
-@keyframes pulse{50%{transform:scale(1.08);opacity:.8}}
-.stage .slabel{position:absolute;top:14px;left:16px;font-family:'Space Mono';font-size:10px;letter-spacing:.2em;color:var(--cap);z-index:3}
-.stage .scard{position:relative;z-index:2;width:74%;cursor:pointer;transition:transform .12s linear}
-.stage .scard img{width:100%;max-height:236px;object-fit:contain;filter:drop-shadow(0 24px 32px rgba(20,28,36,.62));animation:bob 6s ease-in-out infinite}
-.stage .scard .ghost{color:#e7eef2;opacity:.4}
-.stage .scap{position:absolute;bottom:14px;left:16px;right:16px;z-index:3;font-family:'Space Mono';font-size:11px;color:var(--ink)}
-.stage .scap b{font-family:'Oswald';font-weight:600;text-transform:uppercase;letter-spacing:.03em}
-/* quiet progress strip (number demoted from hero) */
-.progress{margin-top:26px;max-width:460px}
-.progress .pnum{font-family:'Space Mono';font-size:11px;color:var(--cap);margin-bottom:8px;letter-spacing:.04em}
-.progress .pnum b{font-family:'Oswald';font-weight:700;font-size:18px;color:var(--ink);margin-right:5px}
-.progress .pbar{height:3px;background:rgba(255,255,255,.18);overflow:hidden}
-.progress .pbar i{display:block;height:100%;width:0;background:var(--ink);transition:width 1.3s var(--ease)}
-.progress .pstats{display:flex;gap:8px 20px;flex-wrap:wrap;margin-top:11px}
-.progress .pstats span{font-family:'Space Mono';font-size:10px;color:var(--mut);letter-spacing:.04em}
-.progress .pstats b{font-family:'Oswald';font-weight:600;font-size:15px;color:var(--ink);margin-right:4px}
-@media(max-width:760px){.hero{grid-template-columns:1fr;gap:22px}.stage{min-height:260px}}
+/* stat ribbon */
+.ribbon{display:flex;gap:8px 22px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.ribbon .big{font-family:'Anton';font-size:clamp(30px,6vw,46px);color:var(--ink);line-height:.9}
+.ribbon .big span{font-family:'Space Mono';font-size:.32em;color:var(--mut);vertical-align:super;margin-left:2px}
+.ribbon .st{font-family:'Space Mono';font-size:10.5px;color:var(--mut);letter-spacing:.04em}
+.ribbon .st b{font-family:'Oswald';font-weight:600;font-size:16px;color:var(--ink);margin-right:5px}
+.ribbon .sp{flex:1}
+.ribbon .pbarwrap{flex-basis:100%;height:3px;background:rgba(255,255,255,.18);overflow:hidden;margin-top:2px}
+.ribbon .pbarwrap i{display:block;height:100%;width:0;background:var(--ink);transition:width 1.2s var(--ease)}
 
-/* section + tools */
-.sect{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin:6px 0 18px}
-.sect h2{font-family:'Anton';font-size:clamp(26px,4.4vw,44px);color:var(--ink);margin:0}
-.sect .tags{font-family:'Space Mono';font-size:10px;color:var(--cap);display:flex;gap:12px;flex-wrap:wrap}
-.sect .sp{flex:1}
-.tools{display:flex;gap:8px;align-items:center;overflow-x:auto;padding-bottom:6px;margin-bottom:18px;scrollbar-width:none}
+/* view header + filters */
+.vhdr{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:2px 0 14px}
+.vhdr h2{font-family:'Anton';font-size:clamp(22px,4vw,36px);color:var(--ink);margin:0}
+.vhdr .sp{flex:1}
+.vhdr .cnt{font-family:'Space Mono';font-size:10.5px;color:var(--cap)}
+.tools{display:flex;gap:8px;align-items:center;overflow-x:auto;padding-bottom:6px;margin-bottom:16px;scrollbar-width:none}
 .tools::-webkit-scrollbar{display:none}
-.chip{flex:none;font-family:'Space Mono';font-size:11px;letter-spacing:.04em;padding:8px 13px;color:var(--mut);background:var(--panel);border:1px solid var(--line);transition:.2s;white-space:nowrap;clip-path:polygon(0 0,calc(100% - 7px) 0,100% 7px,100% 100%,7px 100%,0 calc(100% - 7px))}
+.chip{flex:none;font-family:'Space Mono';font-size:11px;padding:8px 13px;color:var(--mut);background:var(--panel);border:1px solid var(--line);transition:.2s;white-space:nowrap;clip-path:polygon(0 0,calc(100% - 7px) 0,100% 7px,100% 100%,7px 100%,0 calc(100% - 7px))}
 .chip.on{color:var(--b3);background:var(--ink);border-color:var(--ink)}
 .chip:active{transform:scale(.95)}
 
 /* grid */
-.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(176px,1fr))}
-.item{cursor:pointer;animation:pop .55s var(--spring) both;animation-delay:var(--d,0s)}
-@keyframes pop{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:none}}
-.item .frame{position:relative;aspect-ratio:.84;overflow:hidden;display:grid;place-items:center;padding:18px;
+.grid{display:grid;gap:13px;grid-template-columns:repeat(auto-fill,minmax(158px,1fr))}
+@media(max-width:440px){.grid{grid-template-columns:repeat(2,1fr);gap:11px}}
+.item,.dexi{cursor:pointer;animation:pop .5s var(--spring) both;animation-delay:var(--d,0s)}
+@keyframes pop{0%{opacity:0;transform:translateY(18px)}100%{opacity:1;transform:none}}
+.frame{position:relative;aspect-ratio:.86;overflow:hidden;display:grid;place-items:center;padding:16px;
   background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(20,28,36,.18));border:1px solid var(--line);
   transition:transform .35s var(--spring),border-color .3s,box-shadow .3s;
   clip-path:polygon(0 0,calc(100% - var(--notch)) 0,100% var(--notch),100% 100%,var(--notch) 100%,0 calc(100% - var(--notch)))}
-.item:active .frame{transform:scale(.96)}
-@media(hover:hover){.item:hover .frame{transform:translateY(-6px);border-color:var(--line2);box-shadow:0 22px 40px rgba(20,28,36,.4)}}
-.item .stk{width:92%;max-height:84%;object-fit:contain;filter:drop-shadow(0 10px 16px rgba(20,28,36,.5));transition:transform .4s var(--spring)}
+.item:active .frame,.dexi:active .frame{transform:scale(.96)}
+@media(hover:hover){.item:hover .frame,.dexi:hover .frame{transform:translateY(-5px);border-color:var(--line2);box-shadow:0 20px 38px rgba(20,28,36,.4)}}
+.frame .num{position:absolute;top:9px;left:11px;font-family:'Space Mono';font-size:10px;color:var(--mut);z-index:3}
+.frame .dot{position:absolute;top:11px;right:11px;width:9px;height:9px;border-radius:50%;background:var(--rc);z-index:3;box-shadow:0 0 0 3px rgba(20,28,36,.22)}
+.frame .stk{width:92%;max-height:82%;object-fit:contain;filter:drop-shadow(0 10px 16px rgba(20,28,36,.5));transition:transform .4s var(--spring)}
 @media(hover:hover){.item:hover .stk{transform:translateY(-4px) scale(1.03)}}
-.item .idx{position:absolute;top:10px;left:12px;font-family:'Space Mono';font-size:10px;color:var(--mut);z-index:3}
-.item .troph{position:absolute;top:9px;right:10px;z-index:3;width:17px;height:17px;color:var(--gold);filter:drop-shadow(0 2px 5px rgba(0,0,0,.4))}
-.item .troph svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.8}
-.item .sheen{position:absolute;inset:0;background:linear-gradient(115deg,transparent 38%,rgba(255,255,255,.28) 50%,transparent 62%);transform:translateX(-120%)}
+.frame .art{width:86%;color:#e7eef2}
+.frame .troph{position:absolute;bottom:10px;right:11px;z-index:3;width:16px;height:16px;color:var(--gold);filter:drop-shadow(0 2px 5px rgba(0,0,0,.4))}
+.frame .troph svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.8}
+.frame .sheen{position:absolute;inset:0;background:linear-gradient(115deg,transparent 38%,rgba(255,255,255,.26) 50%,transparent 62%);transform:translateX(-120%)}
 .item:active .sheen{animation:sheen 1s var(--ease)}
 @keyframes sheen{to{transform:translateX(120%)}}
-.item .cap{padding:10px 4px 2px}
-.item .cap .nm{font-family:'Oswald';font-weight:600;text-transform:uppercase;font-size:14px;color:var(--ink);letter-spacing:.03em;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.item .cap .meta{display:flex;flex-wrap:wrap;gap:3px 9px;margin-top:5px;font-family:'Space Mono';font-size:10px;color:var(--cap)}
-.item .cap .meta .big{color:var(--ink)}
-@media(max-width:440px){.grid{grid-template-columns:repeat(2,1fr);gap:11px}}
+/* locked dex entry */
+.dexi.locked .art{opacity:.18;filter:brightness(0) invert(.85)}
+.dexi.locked .frame{background:repeating-linear-gradient(135deg,rgba(255,255,255,.04) 0 9px,transparent 9px 18px),rgba(20,28,36,.14)}
+.dexi.locked .frame::after{content:"?";position:absolute;inset:0;display:grid;place-items:center;font-family:'Anton';font-size:50px;color:rgba(255,255,255,.1)}
+.dexi[data-r="legendary"] .frame::before,.dexi[data-r="epic"] .frame::before,.item[data-r="legendary"] .frame::before,.item[data-r="epic"] .frame::before{
+  content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(130deg,transparent 30%,rgba(216,201,168,.16) 45%,rgba(106,160,224,.12) 55%,transparent 70%);mix-blend-mode:screen;animation:irid 6s ease-in-out infinite}
+@keyframes irid{50%{transform:translateX(7%) translateY(4%)}}
+.cap{padding:9px 4px 2px}
+.cap .nm{font-family:'Oswald';font-weight:600;text-transform:uppercase;font-size:13.5px;color:var(--ink);letter-spacing:.03em;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cap .meta{display:flex;flex-wrap:wrap;gap:3px 8px;margin-top:5px;font-family:'Space Mono';font-size:10px;color:var(--cap)}
+.cap .meta .rk{color:var(--rc)}
+.cap .meta .big{color:var(--ink)}
+.dexi.locked .cap .nm{color:var(--mut)}
 
-/* empty state */
-.empty{grid-column:1/-1;text-align:center;padding:46px 22px;border:1px dashed var(--line2);
-  clip-path:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,18px 100%,0 calc(100% - 18px))}
+/* empty */
+.empty{grid-column:1/-1;text-align:center;padding:44px 22px;border:1px dashed var(--line2);clip-path:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,18px 100%,0 calc(100% - 18px))}
 .empty .ef{width:120px;margin:0 auto 16px;color:#e7eef2;opacity:.7;animation:bob 4s ease-in-out infinite}
-.empty h3{font-family:'Anton';font-size:28px;color:var(--ink);margin:0 0 8px}
-.empty p{font-family:'Space Mono';font-size:12px;color:var(--cap);max-width:34ch;margin:0 auto 20px;line-height:1.6}
+.empty h3{font-family:'Anton';font-size:26px;color:var(--ink);margin:0 0 8px}
+.empty p{font-family:'Space Mono';font-size:12px;color:var(--cap);max-width:36ch;margin:0 auto 20px;line-height:1.6}
 .empty .btn{display:inline-flex;width:auto;padding:14px 24px}
 
-/* footer */
-.foot{margin-top:46px;padding-top:22px;border-top:1px solid var(--line);display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap}
-.foot .bc{height:42px;width:200px;max-width:46vw;background:repeating-linear-gradient(90deg,var(--b3) 0 2px,transparent 2px 4px,var(--b3) 4px 5px,transparent 5px 9px);opacity:.6}
-.foot .fi{font-family:'Space Mono';font-size:10px;color:var(--mut);line-height:1.7;text-align:right}
-.foot .fi b{font-family:'Anton';font-size:22px;color:var(--ink);display:block}
-
-/* fab */
-.fab{position:fixed;z-index:30;right:clamp(14px,3vw,28px);bottom:calc(22px + var(--safe-b));height:56px;padding:0 22px;display:flex;align-items:center;gap:10px;font-family:'Oswald';font-weight:600;text-transform:uppercase;letter-spacing:.05em;font-size:14px;color:var(--b3);background:var(--ink);clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px));box-shadow:0 16px 36px rgba(20,28,36,.45);transition:.25s var(--spring);animation:fabin .6s 1.1s var(--spring) both}
-@keyframes fabin{0%{transform:translateY(90px);opacity:0}100%{transform:none;opacity:1}}
-.fab:active{transform:scale(.93)}
-.fab svg{width:20px;height:20px;stroke:var(--b3);stroke-width:2.4;fill:none}
+/* bottom nav */
+.nav{position:fixed;z-index:30;left:50%;bottom:calc(16px + var(--safe-b));transform:translateX(-50%);
+  display:flex;align-items:center;gap:6px;padding:7px;background:rgba(28,36,45,.82);backdrop-filter:blur(14px);
+  border:1px solid var(--line2);box-shadow:0 18px 40px rgba(20,28,36,.5);
+  clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,16px 100%,0 calc(100% - 16px));
+  animation:fabin .6s 1.1s var(--spring) both}
+@keyframes fabin{0%{transform:translate(-50%,90px);opacity:0}100%{transform:translateX(-50%);opacity:1}}
+.nav button{display:flex;flex-direction:column;align-items:center;gap:3px;width:78px;padding:8px 4px;color:var(--mut);font-family:'Space Mono';font-size:9px;letter-spacing:.06em;transition:.2s}
+.nav button svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.8}
+.nav button.on{color:var(--ink)}
+.nav .cam{width:60px;height:60px;margin:-18px 2px 0;border-radius:50%;background:var(--ink);color:var(--b3);justify-content:center;box-shadow:0 10px 24px rgba(20,28,36,.5);border:3px solid var(--b3)}
+.nav .cam svg{width:26px;height:26px;stroke:var(--b3);stroke-width:2}
+.nav .cam:active{transform:scale(.92)}
 
 /* modal */
 .scrim{position:fixed;inset:0;z-index:40;background:rgba(40,48,56,.55);backdrop-filter:blur(10px);opacity:0;visibility:hidden;transition:.4s var(--ease)}
@@ -186,25 +167,38 @@ img{max-width:100%;display:block}
 .sheet .x svg{width:17px;height:17px;stroke:var(--ink);stroke-width:2;fill:none}
 
 /* card */
-.cardtop{position:relative;height:280px;overflow:hidden;display:grid;place-items:center;perspective:1000px;background:radial-gradient(120% 90% at 50% 0%,rgba(255,255,255,.12),transparent 60%)}
+.cardtop{position:relative;height:270px;overflow:hidden;display:grid;place-items:center;perspective:1000px;background:radial-gradient(120% 90% at 50% 4%,rgba(255,255,255,.13),transparent 58%)}
 .cardtop .photo{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;filter:grayscale(.25) contrast(1.05);transition:opacity .6s}
-.cardtop .photo.has{opacity:.5}
-.cardtop .scan{position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,#4b5763 96%)}
+.cardtop .photo.has{opacity:.45}
+.cardtop .scan{position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,#4b5763 96%)}
 .card3d{position:relative;z-index:2;width:78%;max-height:88%;transition:transform .1s linear}
 .card3d img{width:100%;max-height:240px;object-fit:contain;filter:drop-shadow(0 18px 28px rgba(20,28,36,.6));animation:bob 4.5s ease-in-out infinite}
+.card3d .art{color:#e7eef2;width:90%;margin:0 auto}
 .cardtop .num{position:absolute;top:12px;left:16px;font-family:'Space Mono';font-size:10px;letter-spacing:.16em;color:var(--cap);z-index:3}
 .cardbody{padding:6px 22px 24px}
-.cardbody .ttl{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.cardbody h2{font-family:'Anton';font-size:clamp(30px,8vw,46px);color:var(--ink);margin:0;line-height:.9}
-.cardbody .trf{font-family:'Space Mono';font-size:11px;color:var(--gold);display:inline-flex;align-items:center;gap:5px}
-.cardbody .trf svg{width:14px;height:14px}
+.cardbody .ttl{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.cardbody h2{font-family:'Anton';font-size:clamp(28px,7vw,42px);color:var(--ink);margin:0;line-height:.9}
+.rar{font-family:'Space Mono';font-size:10px;letter-spacing:.1em;padding:5px 9px;color:var(--rc);border:1px solid var(--rc);display:inline-flex;align-items:center;gap:6px;text-transform:uppercase}
+.rar::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--rc)}
+.cardbody .lat{font-family:'Space Mono';font-style:italic;color:var(--mut);font-size:12px;margin:6px 0 0}
 .specgrid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);margin:16px 0}
 .spec{background:var(--panel2);padding:11px 13px}
 .spec .k{font-family:'Space Mono';font-size:9.5px;letter-spacing:.1em;color:var(--mut);text-transform:uppercase}
 .spec .v{font-family:'Oswald';font-weight:500;font-size:16px;color:var(--ink);margin-top:3px}
 .spec .v.sm{font-family:'Archivo';font-size:13px;line-height:1.4;text-transform:none;font-weight:500}
 .spec.full{grid-column:1/-1}
-.note{font-size:13.5px;color:var(--cap);font-style:italic;line-height:1.6;margin:0 0 8px}
+.rhdr{display:flex;align-items:center;gap:12px;margin:18px 0 10px;font-family:'Space Mono';font-size:10px;letter-spacing:.18em;color:var(--cap)}
+.rhdr::after{content:"";flex:1;height:1px;background:var(--line)}
+.norec{font-family:'Space Mono';text-align:center;color:var(--mut);font-size:12px;padding:18px;border:1px dashed var(--line);line-height:1.6}
+.rec{background:var(--panel2);border:1px solid var(--line);padding:13px;margin-bottom:10px;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px))}
+.rec .rh{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;font-family:'Space Mono';font-size:12px;color:var(--ink)}
+.rec .rh .t{color:var(--gold)}
+.rec .rrow{display:flex;flex-wrap:wrap;gap:6px 14px;font-family:'Space Mono';font-size:11px;color:var(--mut)}
+.rec .rrow span b{color:var(--ink)}
+.rec .rphoto{margin-top:10px;overflow:hidden;border:1px solid var(--line)}
+.rec .rphoto img{width:100%;height:170px;object-fit:cover;filter:grayscale(.15)}
+.rec .note{margin-top:8px;font-size:12.5px;color:var(--cap);font-style:italic}
+.rec .del{margin-top:8px;font-family:'Space Mono';font-size:10px;color:#e09a9a;opacity:.85}
 .origph{margin:12px 0;overflow:hidden;border:1px solid var(--line)}
 .origph img{width:100%;max-height:260px;object-fit:cover;filter:grayscale(.1)}
 .origcap{font-family:'Space Mono';font-size:10px;color:var(--mut);margin:-6px 0 12px}
@@ -234,7 +228,6 @@ img{max-width:100%;display:block}
 .geo button{flex:none;width:48px;background:var(--panel2);border:1px solid var(--line2);display:grid;place-items:center;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px))}
 .geo button svg{width:19px;height:19px;stroke:var(--ink);stroke-width:1.7;fill:none}
 .hint{font-family:'Space Mono';font-size:10.5px;color:var(--mut);margin-top:6px}
-
 /* photo studio */
 .studio{position:relative;border:1px solid var(--line2);background:var(--panel2);overflow:hidden;min-height:200px;display:grid;place-items:center;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px))}
 .studio.empty-st{border-style:dashed;cursor:pointer;padding:30px;text-align:center}
@@ -248,7 +241,7 @@ img{max-width:100%;display:block}
 .studio .ov .t{font-family:'Space Mono';font-size:12px;color:var(--ink)}
 .studio .badge{position:absolute;z-index:3;top:10px;left:12px;font-family:'Space Mono';font-size:9.5px;letter-spacing:.1em;padding:4px 8px;background:var(--panel2);border:1px solid var(--line2);color:var(--cap)}
 .studio-acts{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
-.studio-acts button{flex:1;min-width:120px;font-family:'Space Mono';font-size:11px;padding:10px;border:1px solid var(--line);color:var(--ink);background:var(--panel);clip-path:polygon(0 0,calc(100% - 7px) 0,100% 7px,100% 100%,7px 100%,0 calc(100% - 7px))}
+.studio-acts button{flex:1;min-width:110px;font-family:'Space Mono';font-size:11px;padding:10px;border:1px solid var(--line);color:var(--ink);background:var(--panel);clip-path:polygon(0 0,calc(100% - 7px) 0,100% 7px,100% 100%,7px 100%,0 calc(100% - 7px))}
 .studio-acts button:active{transform:scale(.96)}
 
 /* order */
@@ -265,19 +258,23 @@ img{max-width:100%;display:block}
 .summ b{font-family:'Anton';font-size:26px;color:var(--ink)}
 
 /* fx */
-#toast{position:fixed;z-index:80;left:50%;bottom:calc(94px + var(--safe-b));transform:translateX(-50%) translateY(20px);background:var(--b3);border:1px solid var(--line2);color:var(--ink);padding:12px 18px;font-family:'Space Mono';font-size:12px;opacity:0;transition:.35s var(--spring);box-shadow:0 14px 40px rgba(20,28,36,.5);pointer-events:none;max-width:90vw;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px))}
+#toast{position:fixed;z-index:80;left:50%;bottom:calc(100px + var(--safe-b));transform:translateX(-50%) translateY(20px);background:var(--b3);border:1px solid var(--line2);color:var(--ink);padding:12px 18px;font-family:'Space Mono';font-size:12px;opacity:0;transition:.35s var(--spring);box-shadow:0 14px 40px rgba(20,28,36,.5);pointer-events:none;max-width:90vw;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px))}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 #confetti{position:fixed;inset:0;z-index:90;pointer-events:none}
-#cele{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.16),transparent 60%);opacity:0;transition:opacity .4s}
-#cele.show{opacity:1}
-#cele .nfish{width:min(58vw,250px);margin:0 auto;animation:newpop 1s var(--spring) both}
-#cele .nfish img{width:100%;filter:drop-shadow(0 16px 26px rgba(20,28,36,.5))}
-@keyframes newpop{0%{transform:scale(.2) rotate(-18deg);opacity:0}60%{transform:scale(1.1) rotate(3deg);opacity:1}100%{transform:scale(1) rotate(0)}}
-#cele .ntxt{font-family:'Anton';font-size:clamp(30px,9vw,58px);color:var(--ink);margin-top:12px;text-align:center;animation:upFade .6s .25s both}
-#cele .nsub{font-family:'Space Mono';letter-spacing:.18em;font-size:12px;color:var(--cap);margin-top:6px;text-align:center;animation:upFade .6s .4s both}
-.ring{position:absolute;border:1.5px solid var(--ink);border-radius:50%;width:40px;height:40px;animation:ring 1.2s var(--ease) forwards;opacity:.7}
+/* caught overlay */
+#cele{position:fixed;inset:0;z-index:70;display:grid;place-items:center;padding:24px;background:rgba(20,28,36,.78);backdrop-filter:blur(8px);opacity:0;visibility:hidden;transition:.4s var(--ease)}
+#cele.show{opacity:1;visibility:visible}
+.celecard{width:min(380px,92vw);text-align:center;background:linear-gradient(180deg,#5d6b78,#3f4a55);border:1px solid var(--line2);padding:8px 22px 22px;clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,20px 100%,0 calc(100% - 20px));transform:scale(.85);transition:transform .5s var(--spring)}
+#cele.show .celecard{transform:scale(1)}
+.celecard .tag{font-family:'Space Mono';font-size:10px;letter-spacing:.24em;color:var(--cap);margin:14px 0 2px}
+.celecard .nfish{width:min(56vw,220px);margin:0 auto;animation:newpop 1s var(--spring) both}
+.celecard .nfish img{width:100%;filter:drop-shadow(0 16px 26px rgba(20,28,36,.5))}
+@keyframes newpop{0%{transform:scale(.2) rotate(-16deg);opacity:0}60%{transform:scale(1.1) rotate(3deg);opacity:1}100%{transform:scale(1) rotate(0)}}
+.celecard h2{font-family:'Anton';font-size:clamp(26px,8vw,40px);color:var(--ink);margin:6px 0 0}
+.celecard .lat{font-family:'Space Mono';font-style:italic;font-size:12px;color:var(--mut);margin-top:3px}
+.celecard .crow{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:12px 0 4px}
+.ring{position:absolute;border:1.5px solid var(--ink);border-radius:50%;width:40px;height:40px;animation:ring 1.2s var(--ease) forwards;opacity:.6}
 @keyframes ring{to{width:130vmax;height:130vmax;opacity:0;border-width:0}}
-
 @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.1ms!important}}
 </style>
 </head>
@@ -298,377 +295,407 @@ img{max-width:100%;display:block}
   <header class="top">
     <div class="brand"><div class="mk" id="brandMk"></div><b class="anton">FISH COLLECTOR<sup>™</sup></b></div>
     <div class="sp"></div>
-    <div class="lang" id="langSel">
-      <button data-l="ru">RU</button><button data-l="en">EN</button><button data-l="no">NO</button>
-    </div>
-    <button class="oct" id="orderAllBtn" title="Order" aria-label="Order">
-      <svg viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-    </button>
+    <div class="lang" id="langSel"><button data-l="ru">RU</button><button data-l="en">EN</button><button data-l="no">NO</button></div>
   </header>
 
-  <section class="hero">
-    <div class="lead">
-      <div class="kick"><span>[ STICKER LOG ]</span><span>[ ANY WATER · ANY FISH ]</span><span id="kGeo">[ GPS READY ]</span></div>
-      <h1 class="anton" id="heroTitle">ПОЙМАЛ.<br>СФОТКАЛ.<br><span class="gh">СОБРАЛ.</span></h1>
-      <p class="blurb" id="heroBlurb">Любая рыба превращается в коллекционный стикер: приложение вырезает фон, добавляет белую обводку и подпись. Жми на стикер — он приблизится и покажет размер, место, дату и фото оригинала.</p>
-      <button class="cta" id="ctaAdd">
-        <span class="o"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>
-        <span class="ct"><b id="ctaB">Добавить улов</b><small>new sticker ↗</small></span>
-      </button>
-      <div class="progress">
-        <div class="pnum"><b id="fCount">0</b><span id="featLbl">в коллекции</span></div>
-        <div class="pbar"><i id="fBar"></i></div>
-        <div class="pstats">
-          <span><b id="sSpecies">0</b><span data-i18n="nSpecies">видов</span></span>
-          <span><b id="sRecord">0</b><span data-i18n="nRecord">рекорд, см</span></span>
-          <span><b id="sPlaces">0</b><span data-i18n="nPlaces">мест</span></span>
-          <span><b id="sTroph">0</b><span data-i18n="nTroph">трофеев</span></span>
-        </div>
-      </div>
-    </div>
-    <div class="stage" id="stage">
-      <div class="glow"></div>
-      <div class="slabel"><span id="stageTag">TOP SPECIMEN</span></div>
-      <div class="scard" id="stageCard"></div>
-      <div class="scap" id="stageCap"></div>
-    </div>
-  </section>
-
-  <div class="sect">
-    <h2 class="anton" id="sectTitle">МОЯ КОЛЛЕКЦИЯ</h2>
+  <div class="ribbon">
+    <div class="big anton"><span id="rbDisc">0</span><span id="rbTot">/0</span></div>
+    <div class="st"><b id="rbCatch">0</b><span id="rbCatchL">поимок</span></div>
+    <div class="st"><b id="rbTroph">0</b><span id="rbTrophL">трофеев</span></div>
+    <div class="st"><b id="rbLeg">0</b><span id="rbLegL">легендарных</span></div>
     <div class="sp"></div>
-    <div class="tags"><span>[ <span id="tagCount">0</span> ]</span><span>[ PWA · OFFLINE ]</span></div>
+    <div class="pbarwrap"><i id="rbBar"></i></div>
   </div>
+
+  <div class="vhdr"><h2 class="anton" id="vTitle">ИНДЕКС</h2><div class="sp"></div><div class="cnt" id="vCnt"></div></div>
   <div class="tools" id="tools"></div>
   <div class="grid" id="grid"></div>
-
-  <footer class="foot">
-    <div><div class="bc"></div>
-      <div style="font-family:'Space Mono';font-size:10px;color:var(--mut);margin-top:8px">[ FISH COLLECTOR™ · ALL CATCHES RESERVED ]</div></div>
-    <div class="fi"><b class="anton">FISH&nbsp;COLLECTOR</b>catch it · shoot it · collect it<br>v<span id="verTxt">2.0.0</span> · offline-ready</div>
-  </footer>
 </main>
 
-<button class="fab" id="fab"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> <span id="fabTxt">Улов</span></button>
+<nav class="nav" id="nav">
+  <button data-v="index" class="on"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span id="navIndex">Индекс</span></button>
+  <button class="cam" id="navCam" aria-label="catch"><svg viewBox="0 0 24 24"><path d="M3 7h4l2-3h6l2 3h4v13H3z"/><circle cx="12" cy="13" r="4"/></svg></button>
+  <button data-v="collection"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4zM4 7l2-3h12l2 3M9 11a3 3 0 0 0 6 0"/></svg><span id="navColl">Коллекция</span></button>
+</nav>
 
 <div class="scrim" id="scrim"></div>
 <div class="sheet" id="cardSheet" role="dialog" aria-modal="true"><button class="x" data-close aria-label="x"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button><div id="cardContent"></div></div>
 <div class="sheet" id="formSheet" role="dialog" aria-modal="true"><button class="x" data-close aria-label="x"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button><div id="formContent"></div></div>
 <div class="sheet" id="orderSheet" role="dialog" aria-modal="true"><button class="x" data-close aria-label="x"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button><div id="orderContent"></div></div>
 
-<div id="cele"><div><div class="nfish" id="celeFish"></div><div class="ntxt anton" id="celeTxt">НОВЫЙ СТИКЕР</div><div class="nsub" id="celeSub"></div></div></div>
+<div id="cele"><div class="celecard"><div class="tag" id="celeTag">CAUGHT</div><div class="nfish" id="celeFish"></div><h2 class="anton" id="celeName"></h2><div class="lat" id="celeLat"></div><div class="crow" id="celeRar"></div><div class="btnrow"><button class="btn ghost" id="celeShare"><svg viewBox="0 0 24 24"><path d="M4 12v8h16v-8M12 16V3M7 8l5-5 5 5"/></svg> <span id="celeShareT">Поделиться</span></button><button class="btn pri" id="celeDone"><span id="celeDoneT">Готово</span></button></div></div></div>
 <div id="toast"></div>
 <canvas id="confetti"></canvas>
 
 <script>
 "use strict";
-const APP_VERSION='2.1.1';
+const APP_VERSION='3.0.0';
 const $=id=>document.getElementById(id);
 const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
-const FISH_SIL=`<svg viewBox="0 0 150 60" fill="currentColor"><path d="M10 30c22-16 80-18 112-8 8 3 12 3 20-2-3 7-3 13 0 20-8-5-12-5-20-2-32 10-90 8-112-8z"/><circle cx="22" cy="27" r="2.6" fill="#3f4a55"/><path d="M12 33c-2 2-2 3-3 5" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>`;
 const TROPHY_SVG=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4.5V8A3 3 0 0 0 7 11M17 6h2.5V8a3 3 0 0 1-2.5 3"/></svg>`;
-// фирменный знак — die-cut стикер-рыба с белой обводкой (для шапки/сплэша на тёмном фоне)
-const LOGO_SVG=`<svg viewBox="0 0 168 78" fill="none"><g transform="translate(9,12)"><path d="M10 30c22-16 80-18 112-8 8 3 12 3 20-2-3 7-3 13 0 20-8-5-12-5-20-2-32 10-90 8-112-8z" fill="#ffffff" stroke="#ffffff" stroke-width="9" stroke-linejoin="round"/><path d="M10 30c22-16 80-18 112-8 8 3 12 3 20-2-3 7-3 13 0 20-8-5-12-5-20-2-32 10-90 8-112-8z" fill="#e7eef2"/><path d="M20 30c26-4 76-4 100 1" stroke="#aeb9c2" stroke-width="1.4" opacity=".6"/><circle cx="22" cy="27" r="2.8" fill="#39434d"/></g></svg>`;
 
-/* =================== I18N =================== */
+/* ===== fish silhouette art (for index entries) ===== */
+const FISH={
+ treska:`<svg viewBox="0 0 150 60" fill="currentColor"><path d="M10 30c22-16 80-18 112-8 8 3 12 3 20-2-3 7-3 13 0 20-8-5-12-5-20-2-32 10-90 8-112-8z"/><path d="M18 30c25-4 75-4 100 1-25 4-75 4-100-1z" opacity=".25"/><circle cx="22" cy="27" r="2.6" fill="#2b3742"/></svg>`,
+ saida:`<svg viewBox="0 0 150 60" fill="currentColor"><path d="M12 30c24-15 78-16 108-7 9-6 16-9 26-12-5 8-6 14 0 19-3 7-2 13 0 20-10-3-17-6-26-12-30 9-84 8-108-8z"/><circle cx="24" cy="27" r="2.6" fill="#2b3742"/></svg>`,
+ piksha:`<svg viewBox="0 0 150 60" fill="currentColor"><path d="M10 30c22-16 80-18 112-8 8 3 12 3 20-2-3 7-3 13 0 20-8-5-12-5-20-2-32 10-90 8-112-8z"/><ellipse cx="44" cy="24" rx="4.5" ry="6" fill="#2b3742" opacity=".5"/><circle cx="22" cy="27" r="2.6" fill="#2b3742"/></svg>`,
+ lyr:`<svg viewBox="0 0 150 60" fill="currentColor"><path d="M16 28c24-14 78-15 106-6 9-6 16-9 26-12-5 8-6 14 0 19-3 7-2 13 0 20-10-3-17-6-26-12-28 9-80 8-104-6z"/><path d="M16 28c-3 2-5 4-6 8 4-1 8-1 12-2z"/><circle cx="28" cy="26" r="2.6" fill="#2b3742"/></svg>`,
+ molva:`<svg viewBox="0 0 150 60" fill="currentColor"><path d="M8 30c20-12 95-14 128-4 6 2 6 6 0 8-33 10-108 8-128-4z"/><path d="M136 26l10-5c1 5 1 13 0 18l-10-5z"/><circle cx="20" cy="29" r="2.4" fill="#2b3742"/></svg>`,
+ makrel:`<svg viewBox="0 0 150 60" fill="currentColor"><path d="M12 30c22-13 76-14 104-6 9-5 16-8 28-12-5 8-6 14 0 19-3 6-2 12 0 19-12-4-19-7-28-12-28 8-82 7-104-7z"/><g opacity=".3"><path d="M30 19q8 6 0 12M48 18q9 7 0 13M66 18q9 7 0 14M84 19q9 7 0 13" stroke="#2b3742" stroke-width="2" fill="none"/></g><circle cx="22" cy="28" r="2.5" fill="#2b3742"/></svg>`,
+ sild:`<svg viewBox="0 0 150 60" fill="currentColor"><path d="M14 30c22-12 74-13 100-6 8-5 15-8 26-11-4 7-5 13 0 17-3 6-2 11 0 17-11-3-18-6-26-11-26 8-78 7-100-5z"/><circle cx="24" cy="28" r="2.4" fill="#2b3742"/></svg>`,
+ zubatka:`<svg viewBox="0 0 150 60" fill="currentColor"><path d="M8 30c4-10 16-16 30-18 30-4 76-2 104 8 6 2 6 6 0 8-28 10-74 12-104 8-14-2-26-8-30-14z"/><circle cx="24" cy="26" r="2.6" fill="#2b3742"/></svg>`,
+ uer:`<svg viewBox="0 0 150 60" fill="currentColor"><path d="M12 30c6-13 30-19 56-19 30 0 58 6 74 14 5-4 6-9 4-14 6 4 10 11 10 19s-4 15-10 19c2-5 1-10-4-14-16 8-44 14-74 14-26 0-50-6-56-19z"/><circle cx="30" cy="26" r="3.2" fill="#2b3742"/></svg>`,
+ paltus:`<svg viewBox="0 0 150 90" fill="currentColor"><path d="M14 45c10-26 96-30 120-4 4 4 4 6 0 10-2 3-2 7 0 10-24 26-110 22-120-4-3-7-3-15 0-22z"/><circle cx="30" cy="40" r="3" fill="#2b3742"/><circle cx="42" cy="38" r="3" fill="#2b3742"/></svg>`,
+ krab:`<svg viewBox="0 0 150 90" fill="currentColor"><g stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M40 52L18 64M44 60L24 76M106 52l22 12M102 60l20 16M38 46L14 46M112 46l24 0"/></g><ellipse cx="75" cy="46" rx="46" ry="26"/><path d="M34 56c-14 4-26 0-30-10 8-4 14-2 18 2 2-6 8-8 14-6zM116 56c14 4 26 0 30-10-8-4-14-2-18 2-2-6-8-8-14-6z"/><circle cx="64" cy="40" r="3" fill="#2b3742"/><circle cx="86" cy="40" r="3" fill="#2b3742"/></svg>`,
+};
+
+/* ===== DEX: curated fish index ===== */
+// col: salt|deep|fresh|game ; rar: common|uncommon|rare|epic|legendary ; sil: FISH key
+const DEX=[
+ {id:'cod',     n:{ru:'Треска',en:'Cod',no:'Torsk'},               lat:'Gadus morhua',           col:'salt', rar:'uncommon', sil:'treska'},
+ {id:'saithe',  n:{ru:'Сайда',en:'Saithe',no:'Sei'},               lat:'Pollachius virens',      col:'salt', rar:'common',   sil:'saida'},
+ {id:'haddock', n:{ru:'Пикша',en:'Haddock',no:'Hyse'},             lat:'Melanogrammus aeglefinus',col:'salt',rar:'common',   sil:'piksha'},
+ {id:'pollack', n:{ru:'Люр',en:'Pollack',no:'Lyr'},                lat:'Pollachius pollachius',  col:'salt', rar:'uncommon', sil:'lyr'},
+ {id:'ling',    n:{ru:'Мольва',en:'Ling',no:'Lange'},              lat:'Molva molva',            col:'salt', rar:'rare',     sil:'molva'},
+ {id:'mackerel',n:{ru:'Скумбрия',en:'Mackerel',no:'Makrell'},      lat:'Scomber scombrus',       col:'salt', rar:'common',   sil:'makrel'},
+ {id:'herring', n:{ru:'Сельдь',en:'Herring',no:'Sild'},            lat:'Clupea harengus',        col:'salt', rar:'common',   sil:'sild'},
+ {id:'wolffish',n:{ru:'Зубатка',en:'Wolffish',no:'Steinbit'},      lat:'Anarhichas lupus',       col:'salt', rar:'rare',     sil:'zubatka'},
+ {id:'redfish', n:{ru:'Морской окунь',en:'Redfish',no:'Uer'},      lat:'Sebastes norvegicus',    col:'salt', rar:'uncommon', sil:'uer'},
+ {id:'flounder',n:{ru:'Камбала',en:'Flounder',no:'Flyndre'},       lat:'Platichthys flesus',     col:'salt', rar:'common',   sil:'paltus'},
+ {id:'halibut', n:{ru:'Палтус',en:'Halibut',no:'Kveite'},          lat:'Hippoglossus hippoglossus',col:'salt',rar:'legendary',sil:'paltus'},
+ {id:'crab',    n:{ru:'Краб',en:'Crab',no:'Krabbe'},               lat:'Cancer pagurus',         col:'salt', rar:'common',   sil:'krab'},
+ {id:'hake',    n:{ru:'Хек',en:'Hake',no:'Lysing'},                lat:'Merluccius merluccius',  col:'deep', rar:'rare',     sil:'molva'},
+ {id:'ghalibut',n:{ru:'Чёрный палтус',en:'Greenland halibut',no:'Blåkveite'},lat:'Reinhardtius hippoglossoides',col:'deep',rar:'epic',sil:'paltus'},
+ {id:'blueling',n:{ru:'Голубая мольва',en:'Blue ling',no:'Blålange'},lat:'Molva dypterygia',     col:'deep', rar:'epic',     sil:'molva'},
+ {id:'tusk',    n:{ru:'Менёк',en:'Tusk',no:'Brosme'},              lat:'Brosme brosme',          col:'deep', rar:'rare',     sil:'molva'},
+ {id:'pike',    n:{ru:'Щука',en:'Pike',no:'Gjedde'},               lat:'Esox lucius',            col:'fresh',rar:'uncommon', sil:'molva'},
+ {id:'perch',   n:{ru:'Окунь',en:'Perch',no:'Abbor'},              lat:'Perca fluviatilis',      col:'fresh',rar:'common',   sil:'uer'},
+ {id:'zander',  n:{ru:'Судак',en:'Zander',no:'Gjørs'},             lat:'Sander lucioperca',      col:'fresh',rar:'uncommon', sil:'saida'},
+ {id:'bream',   n:{ru:'Лещ',en:'Bream',no:'Brasme'},               lat:'Abramis brama',          col:'fresh',rar:'common',   sil:'uer'},
+ {id:'carp',    n:{ru:'Карп',en:'Carp',no:'Karpe'},                lat:'Cyprinus carpio',        col:'fresh',rar:'uncommon', sil:'uer'},
+ {id:'crucian', n:{ru:'Карась',en:'Crucian carp',no:'Karuss'},     lat:'Carassius carassius',    col:'fresh',rar:'common',   sil:'uer'},
+ {id:'burbot',  n:{ru:'Налим',en:'Burbot',no:'Lake'},              lat:'Lota lota',              col:'fresh',rar:'rare',     sil:'molva'},
+ {id:'catfish', n:{ru:'Сом',en:'Wels catfish',no:'Malle'},         lat:'Silurus glanis',         col:'fresh',rar:'epic',     sil:'zubatka'},
+ {id:'salmon',  n:{ru:'Лосось',en:'Salmon',no:'Laks'},             lat:'Salmo salar',            col:'game', rar:'epic',     sil:'saida'},
+ {id:'trout',   n:{ru:'Форель',en:'Trout',no:'Ørret'},             lat:'Salmo trutta',           col:'game', rar:'uncommon', sil:'saida'},
+ {id:'char',    n:{ru:'Голец',en:'Arctic char',no:'Røye'},         lat:'Salvelinus alpinus',     col:'game', rar:'rare',     sil:'saida'},
+ {id:'grayling',n:{ru:'Хариус',en:'Grayling',no:'Harr'},           lat:'Thymallus thymallus',    col:'game', rar:'uncommon', sil:'saida'},
+ {id:'eel',     n:{ru:'Угорь',en:'Eel',no:'Ål'},                   lat:'Anguilla anguilla',      col:'game', rar:'rare',     sil:'molva'},
+ {id:'tuna',    n:{ru:'Тунец',en:'Tuna',no:'Tunfisk'},             lat:'Thunnus thynnus',        col:'game', rar:'legendary',sil:'makrel'},
+];
+const RCOL={common:'#9fb0bc',uncommon:'#5fd39a',rare:'#6aa0e0',epic:'#b58fe0',legendary:'#d8c9a8'};
+const RW={common:1,uncommon:2,rare:3,epic:4,legendary:5};
+const STICKER_PRICE=149;
+const dexById=id=>DEX.find(d=>d.id===id);
+function dexNum(id){const i=DEX.findIndex(d=>d.id===id);return i<0?0:i+1;}
+function dexName(d){return d.n[LANG]||d.n.en;}
+// resolve a typed name to a dex species (any language)
+function resolveDex(name){const q=(name||'').trim().toLowerCase();if(!q)return null;
+  return DEX.find(d=>d.lat.toLowerCase()===q||Object.values(d.n).some(v=>v.toLowerCase()===q))||null;}
+function sizeRarity(L){L=+L||0;if(L>=120)return'legendary';if(L>=80)return'epic';if(L>=50)return'rare';if(L>=28)return'uncommon';return'common';}
+
+/* ===== i18n ===== */
 const I18N={
- ru:{splashSub:'Лови. Снимай. Коллекционируй.',heroTitle:'ПОЙМАЛ.<br>СФОТКАЛ.<br><span class="gh">СОБРАЛ.</span>',
-   heroBlurb:'Любая рыба превращается в коллекционный стикер: приложение вырезает фон, добавляет белую обводку и подпись. Жми на стикер — он приблизится и покажет размер, место, дату и фото оригинала.',
-   ctaB:'Добавить улов',fabTxt:'Улов',sectTitle:'МОЯ КОЛЛЕКЦИЯ',featLbl:'в коллекции',topSpecimen:'ГЛАВНЫЙ ТРОФЕЙ',stageEmpty:'Здесь появится твой первый стикер — нажми «Добавить улов»',
-   nSpecies:'видов',nRecord:'рекорд, см',nPlaces:'мест',nTroph:'трофеев',
-   sortSize:'ПО РАЗМЕРУ',sortNew:'СВЕЖИЕ',sortName:'ПО ВИДУ',sortTrophy:'ТРОФЕИ',
-   emptyH:'Коллекция пуста',emptyP:'Сфоткай первую рыбу — приложение вырежет фон и сделает die-cut стикер.',
-   newSticker:'НОВЫЙ СТИКЕР',rareCatch:'ТРОФЕЙ В КОЛЛЕКЦИИ',
+ ru:{splashSub:'Лови. Снимай. Коллекционируй.',navIndex:'Индекс',navColl:'Коллекция',
+   tIndex:'ИНДЕКС',tColl:'КОЛЛЕКЦИЯ',rbCatch:'поимок',rbTroph:'трофеев',rbLeg:'легендарных',
+   all:'ВСЕ',colSalt:'МОРСКИЕ',colDeep:'ГЛУБИНА',colFresh:'ПРЕСНОВОДНЫЕ',colGame:'ПРОХОДНЫЕ',colOther:'СВОИ',
+   sortTop:'ЗНАЧИМОСТЬ',sortSize:'ПО РАЗМЕРУ',sortNew:'СВЕЖИЕ',sortName:'ПО ВИДУ',gpsPhoto:'[ координаты из фото ✓ ]',aiUnavailable:'ИИ недоступен — простая вырезка',
+   rCommon:'Обычная',rUncommon:'Необычная',rRare:'Редкая',rEpic:'Эпическая',rLegendary:'Легендарная',
+   emptyIH:'Заполни индекс',emptyIP:'Сотни видов ждут силуэтами. Поймай и сфоткай рыбу — она откроется в индексе.',
+   emptyCH:'Коллекция пуста',emptyCP:'Сфоткай первую рыбу — приложение вырежет фон и сделает die-cut стикер.',
+   add:'Поймать',notDiscovered:'Не открыт',photographHint:'Поймай и сфоткай этот вид, чтобы открыть карточку.',
+   caught:'ПОЙМАНО',caughtAgain:'СНОВА ПОЙМАНО',trophyNew:'НОВЫЙ ТРОФЕЙ',
+   share:'Поделиться',done:'Готово',shareFallback:'Стикер скачан — прикрепи его',
    formTitle:'Новый улов',formSub:'[ фото → вырезка фона → стикер ]',
    fPhoto:'Фото рыбы',photoPick:'СНЯТЬ ИЛИ ВЫБРАТЬ ФОТО',cutting:'Вырезаю фон…',loadingModel:'Загружаю ИИ-модель…',
-   cutDone:'СТИКЕР ГОТОВ',cutAi:'Вырезать фон (ИИ)',cutSimple:'Простая вырезка',keepOrig:'Без вырезки',retake:'Заменить фото',
-   fName:'Название рыбы',fNamePh:'напр. Треска',fSize:'Размер, см',fQty:'Количество',fDate:'Дата и время',
+   cutDone:'СТИКЕР ГОТОВ',cutSimple:'Простая вырезка',keepOrig:'Без вырезки',retake:'Заменить фото',
+   fName:'Вид рыбы',fNamePh:'выбери из списка или впиши свой',fSize:'Размер, см',fQty:'Количество',fDate:'Дата и время',
    fPlace:'Место',fPlacePh:'точка или координаты',fMethod:'Способ / снасть',fMethodPh:'спиннинг, джиг…',fNote:'Заметка',fNotePh:'история поимки…',
-   cancel:'Отмена',save:'В коллекцию',needName:'Введи название рыбы',needPhoto:'Добавь фото',saved:'Стикер сохранён 🎣',
-   cardSpecimen:'СТИКЕР',kSize:'Размер',kWhen:'Когда',kPlace:'Место',kMethod:'Способ',kRecord:'Рекорд вида',
-   origPhoto:'Фото оригинала',trophy:'ТРОФЕЙ',noRec:'—',
+   cancel:'Отмена',save:'В коллекцию',needName:'Укажи вид рыбы',needPhoto:'Добавь фото',
+   kSize:'Размер',kWhen:'Когда',kPlace:'Место',kMethod:'Способ',kRecord:'Рекорд вида',kCollection:'Коллекция',
+   origPhoto:'Фото оригинала',trophy:'ТРОФЕЙ',noRec:'—',recHdr:'ЖУРНАЛ ПОИМОК',
    bAdd:'Ещё',bDl:'Скачать',bOrder:'Заказать',del:'Удалить стикер?',deleted:'Удалено',
-   orderTitle:'Заказать наклейки',orderSub:'[ виниловые die-cut наклейки · доставка почтой ]',
+   orderTitle:'Заказать наклейки',orderSub:'[ виниловые die-cut · доставка почтой ]',
    oTotal:'ИТОГО',oName:'Имя',oNamePh:'как к вам обращаться',oAddr:'Адрес доставки',oAddrPh:'индекс, город, улица, дом',
-   oContact:'Контакт (почта / телефон)',oContactPh:'email или телефон',oSend:'Оформить',oNeed:'Заполни имя и адрес',oEmpty:'Сначала добавь стикеры',oNote:'[ заявка уйдёт письмом; оплата и подтверждение — ответным письмом ]',
-   ordered:'Заявка сформирована ✉️',dlReady:'Стикер скачан ✓',gpsReady:'[ GPS READY ]',gpsWait:'[ определяю… ]',gpsOk:'[ координаты ✓ ]',gpsFail:'[ нет GPS — введи вручную ]',gpsNo:'[ GPS недоступен ]'},
- en:{splashSub:'Catch. Shoot. Collect.',heroTitle:'CATCH IT.<br>SHOOT IT.<br><span class="gh">COLLECT IT.</span>',
-   heroBlurb:'Any fish becomes a collectible sticker: the app cuts out the background, adds a white die-cut outline and a label. Tap a sticker — it zooms in and shows size, place, date and the original photo.',
-   ctaB:'Add catch',fabTxt:'Catch',sectTitle:'MY COLLECTION',featLbl:'in collection',topSpecimen:'TOP SPECIMEN',stageEmpty:'Your first sticker shows up here — tap “Add catch”',
-   nSpecies:'species',nRecord:'record, cm',nPlaces:'spots',nTroph:'trophies',
-   sortSize:'BY SIZE',sortNew:'NEWEST',sortName:'BY SPECIES',sortTrophy:'TROPHIES',
-   emptyH:'Collection is empty',emptyP:'Shoot your first fish — the app removes the background and makes a die-cut sticker.',
-   newSticker:'NEW STICKER',rareCatch:'TROPHY UNLOCKED',
+   oContact:'Контакт',oContactPh:'email или телефон',oSend:'Оформить',oNeed:'Заполни имя и адрес',oEmpty:'Сначала поймай рыбу',oNote:'[ заявка уйдёт письмом; оплата и подтверждение — ответом ]',
+   ordered:'Заявка сформирована',dlReady:'Стикер скачан',gpsReady:'[ GPS готов ]',gpsWait:'[ определяю… ]',gpsOk:'[ координаты ✓ ]',gpsFail:'[ нет GPS — введи вручную ]',gpsNo:'[ GPS недоступен ]'},
+ en:{splashSub:'Catch. Shoot. Collect.',navIndex:'Index',navColl:'Collection',
+   tIndex:'INDEX',tColl:'COLLECTION',rbCatch:'catches',rbTroph:'trophies',rbLeg:'legendary',
+   all:'ALL',colSalt:'SALTWATER',colDeep:'DEEP SEA',colFresh:'FRESHWATER',colGame:'MIGRATORY',colOther:'CUSTOM',
+   sortTop:'TOP',sortSize:'BY SIZE',sortNew:'NEWEST',sortName:'BY SPECIES',gpsPhoto:'[ coords from photo ✓ ]',aiUnavailable:'AI unavailable — simple cutout',
+   rCommon:'Common',rUncommon:'Uncommon',rRare:'Rare',rEpic:'Epic',rLegendary:'Legendary',
+   emptyIH:'Fill your index',emptyIP:'Dozens of species wait as silhouettes. Catch and shoot a fish to reveal it.',
+   emptyCH:'Collection is empty',emptyCP:'Shoot your first fish — the app removes the background and makes a die-cut sticker.',
+   add:'Catch',notDiscovered:'Not discovered',photographHint:'Catch and photograph this species to reveal its card.',
+   caught:'CAUGHT',caughtAgain:'CAUGHT AGAIN',trophyNew:'NEW TROPHY',
+   share:'Share',done:'Done',shareFallback:'Sticker downloaded — attach it',
    formTitle:'New catch',formSub:'[ photo → cut out → sticker ]',
    fPhoto:'Fish photo',photoPick:'TAKE OR PICK A PHOTO',cutting:'Removing background…',loadingModel:'Loading AI model…',
-   cutDone:'STICKER READY',cutAi:'Remove background (AI)',cutSimple:'Simple cutout',keepOrig:'Keep original',retake:'Replace photo',
-   fName:'Fish name',fNamePh:'e.g. Cod',fSize:'Size, cm',fQty:'Quantity',fDate:'Date & time',
+   cutDone:'STICKER READY',cutSimple:'Simple cutout',keepOrig:'Keep original',retake:'Replace photo',
+   fName:'Species',fNamePh:'pick from list or type your own',fSize:'Size, cm',fQty:'Quantity',fDate:'Date & time',
    fPlace:'Place',fPlacePh:'spot or coordinates',fMethod:'Method / tackle',fMethodPh:'spinning, jig…',fNote:'Note',fNotePh:'the story…',
-   cancel:'Cancel',save:'Collect',needName:'Enter the fish name',needPhoto:'Add a photo',saved:'Sticker saved 🎣',
-   cardSpecimen:'STICKER',kSize:'Size',kWhen:'When',kPlace:'Place',kMethod:'Method',kRecord:'Species record',
-   origPhoto:'Original photo',trophy:'TROPHY',noRec:'—',
+   cancel:'Cancel',save:'Collect',needName:'Enter the species',needPhoto:'Add a photo',
+   kSize:'Size',kWhen:'When',kPlace:'Place',kMethod:'Method',kRecord:'Species record',kCollection:'Collection',
+   origPhoto:'Original photo',trophy:'TROPHY',noRec:'—',recHdr:'CATCH LOG',
    bAdd:'More',bDl:'Download',bOrder:'Order',del:'Delete sticker?',deleted:'Deleted',
-   orderTitle:'Order stickers',orderSub:'[ vinyl die-cut stickers · shipped by mail ]',
+   orderTitle:'Order stickers',orderSub:'[ vinyl die-cut · shipped by mail ]',
    oTotal:'TOTAL',oName:'Name',oNamePh:'your name',oAddr:'Shipping address',oAddrPh:'zip, city, street, house',
-   oContact:'Contact (email / phone)',oContactPh:'email or phone',oSend:'Place order',oNeed:'Fill name and address',oEmpty:'Add stickers first',oNote:'[ request is sent by email; payment & confirmation in reply ]',
-   ordered:'Order drafted ✉️',dlReady:'Sticker downloaded ✓',gpsReady:'[ GPS READY ]',gpsWait:'[ locating… ]',gpsOk:'[ coords ✓ ]',gpsFail:'[ no GPS — type manually ]',gpsNo:'[ GPS unavailable ]'},
- no:{splashSub:'Fang. Knips. Samle.',heroTitle:'FANG DEN.<br>KNIPS DEN.<br><span class="gh">SAMLE DEN.</span>',
-   heroBlurb:'Enhver fisk blir et samleklistremerke: appen fjerner bakgrunnen, legger til hvit die-cut-kant og etikett. Trykk på et klistremerke — det zoomer inn og viser størrelse, sted, dato og originalbildet.',
-   ctaB:'Legg til fangst',fabTxt:'Fangst',sectTitle:'MIN SAMLING',featLbl:'i samlingen',topSpecimen:'TOPPFANGST',stageEmpty:'Ditt første klistremerke dukker opp her — trykk «Legg til fangst»',
-   nSpecies:'arter',nRecord:'rekord, cm',nPlaces:'steder',nTroph:'trofeer',
-   sortSize:'ETTER STØRRELSE',sortNew:'NYESTE',sortName:'ETTER ART',sortTrophy:'TROFEER',
-   emptyH:'Samlingen er tom',emptyP:'Knips din første fisk — appen fjerner bakgrunnen og lager et die-cut-klistremerke.',
-   newSticker:'NYTT KLISTREMERKE',rareCatch:'TROFÉ LÅST OPP',
+   oContact:'Contact',oContactPh:'email or phone',oSend:'Place order',oNeed:'Fill name and address',oEmpty:'Catch a fish first',oNote:'[ request is sent by email; payment & confirmation in reply ]',
+   ordered:'Order drafted',dlReady:'Sticker downloaded',gpsReady:'[ GPS ready ]',gpsWait:'[ locating… ]',gpsOk:'[ coords ✓ ]',gpsFail:'[ no GPS — type manually ]',gpsNo:'[ GPS unavailable ]'},
+ no:{splashSub:'Fang. Knips. Samle.',navIndex:'Indeks',navColl:'Samling',
+   tIndex:'INDEKS',tColl:'SAMLING',rbCatch:'fangster',rbTroph:'trofeer',rbLeg:'legendariske',
+   all:'ALLE',colSalt:'SALTVANN',colDeep:'DYPHAV',colFresh:'FERSKVANN',colGame:'VANDREFISK',colOther:'EGNE',
+   sortTop:'TOPP',sortSize:'ETTER STØRRELSE',sortNew:'NYESTE',sortName:'ETTER ART',gpsPhoto:'[ koordinater fra bilde ✓ ]',aiUnavailable:'AI utilgjengelig — enkelt utklipp',
+   rCommon:'Vanlig',rUncommon:'Uvanlig',rRare:'Sjelden',rEpic:'Episk',rLegendary:'Legendarisk',
+   emptyIH:'Fyll indeksen',emptyIP:'Dusinvis av arter venter som silhuetter. Fang og knips en fisk for å låse den opp.',
+   emptyCH:'Samlingen er tom',emptyCP:'Knips din første fisk — appen fjerner bakgrunnen og lager et die-cut-klistremerke.',
+   add:'Fang',notDiscovered:'Ikke oppdaget',photographHint:'Fang og fotografer denne arten for å låse opp kortet.',
+   caught:'FANGET',caughtAgain:'FANGET IGJEN',trophyNew:'NYTT TROFÉ',
+   share:'Del',done:'Ferdig',shareFallback:'Klistremerke lastet ned — legg det ved',
    formTitle:'Ny fangst',formSub:'[ bilde → utklipp → klistremerke ]',
    fPhoto:'Fiskebilde',photoPick:'TA ELLER VELG BILDE',cutting:'Fjerner bakgrunn…',loadingModel:'Laster AI-modell…',
-   cutDone:'KLISTREMERKE KLART',cutAi:'Fjern bakgrunn (AI)',cutSimple:'Enkelt utklipp',keepOrig:'Behold original',retake:'Bytt bilde',
-   fName:'Fiskenavn',fNamePh:'f.eks. Torsk',fSize:'Størrelse, cm',fQty:'Antall',fDate:'Dato & tid',
+   cutDone:'KLISTREMERKE KLART',cutSimple:'Enkelt utklipp',keepOrig:'Behold original',retake:'Bytt bilde',
+   fName:'Art',fNamePh:'velg fra listen eller skriv egen',fSize:'Størrelse, cm',fQty:'Antall',fDate:'Dato & tid',
    fPlace:'Sted',fPlacePh:'sted eller koordinater',fMethod:'Metode / redskap',fMethodPh:'spinning, jigg…',fNote:'Notat',fNotePh:'historien…',
-   cancel:'Avbryt',save:'Samle',needName:'Skriv fiskenavnet',needPhoto:'Legg til bilde',saved:'Klistremerke lagret 🎣',
-   cardSpecimen:'KLISTREMERKE',kSize:'Størrelse',kWhen:'Når',kPlace:'Sted',kMethod:'Metode',kRecord:'Artsrekord',
-   origPhoto:'Originalbilde',trophy:'TROFÉ',noRec:'—',
+   cancel:'Avbryt',save:'Samle',needName:'Skriv arten',needPhoto:'Legg til bilde',
+   kSize:'Størrelse',kWhen:'Når',kPlace:'Sted',kMethod:'Metode',kRecord:'Artsrekord',kCollection:'Samling',
+   origPhoto:'Originalbilde',trophy:'TROFÉ',noRec:'—',recHdr:'FANGSTLOGG',
    bAdd:'Mer',bDl:'Last ned',bOrder:'Bestill',del:'Slette klistremerket?',deleted:'Slettet',
    orderTitle:'Bestill klistremerker',orderSub:'[ vinyl die-cut · sendes i posten ]',
    oTotal:'SUM',oName:'Navn',oNamePh:'navnet ditt',oAddr:'Leveringsadresse',oAddrPh:'postnr, by, gate, hus',
-   oContact:'Kontakt (e-post / telefon)',oContactPh:'e-post eller telefon',oSend:'Bestill',oNeed:'Fyll inn navn og adresse',oEmpty:'Legg til klistremerker først',oNote:'[ forespørsel sendes på e-post; betaling & bekreftelse i svar ]',
-   ordered:'Bestilling opprettet ✉️',dlReady:'Klistremerke lastet ned ✓',gpsReady:'[ GPS READY ]',gpsWait:'[ lokaliserer… ]',gpsOk:'[ koordinater ✓ ]',gpsFail:'[ ingen GPS — skriv manuelt ]',gpsNo:'[ GPS utilgjengelig ]'},
-};
-const NAMES={
- ru:['Треска','Окунь','Щука','Судак','Лосось','Форель','Сёмга','Сельдь','Скумбрия','Палтус','Камбала','Сом','Карп','Лещ','Морской окунь','Тунец','Сайда','Зубатка','Краб','Угорь','Хариус','Голавль','Карась','Налим'],
- en:['Cod','Perch','Pike','Zander','Salmon','Trout','Herring','Mackerel','Halibut','Flounder','Catfish','Carp','Bream','Sea bass','Tuna','Pollock','Wolffish','Crab','Eel','Grayling','Chub','Bass','Pikeperch','Burbot'],
- no:['Torsk','Abbor','Gjedde','Gjørs','Laks','Ørret','Sild','Makrell','Kveite','Flyndre','Steinbit','Karpe','Brasme','Havabbor','Tunfisk','Sei','Lyr','Krabbe','Ål','Harr','Stam','Gjørs','Sik','Lake'],
+   oContact:'Kontakt',oContactPh:'e-post eller telefon',oSend:'Bestill',oNeed:'Fyll inn navn og adresse',oEmpty:'Fang en fisk først',oNote:'[ forespørsel sendes på e-post; betaling & bekreftelse i svar ]',
+   ordered:'Bestilling opprettet',dlReady:'Klistremerke lastet ned',gpsReady:'[ GPS klar ]',gpsWait:'[ lokaliserer… ]',gpsOk:'[ koordinater ✓ ]',gpsFail:'[ ingen GPS — skriv manuelt ]',gpsNo:'[ GPS utilgjengelig ]'},
 };
 let LANG=localStorage.getItem('fishcollector_lang')||((navigator.language||'ru').slice(0,2));
 if(!I18N[LANG])LANG='en';
 const t=k=>(I18N[LANG]&&I18N[LANG][k])||I18N.en[k]||k;
+const colLabel=c=>t('col'+c.charAt(0).toUpperCase()+c.slice(1));
+const rarLabel=r=>t('r'+r.charAt(0).toUpperCase()+r.slice(1));
+function unit(){return LANG==='ru'?'см':'cm';}
 
-/* =================== STORAGE (meta in LS, images in IDB) =================== */
-const LS='fishcollector_catches_v2';
+/* ===== storage ===== */
+const LS='fishcollector_catches_v3';
 function loadCatches(){try{return JSON.parse(localStorage.getItem(LS))||[];}catch(e){return [];}}
 function saveCatches(){localStorage.setItem(LS,JSON.stringify(CATCHES));}
 let CATCHES=loadCatches();
-const IMG={}; // memory cache id->{stk,org}
-// honest catalog numbering: stable № per catch, assigned in order added
-function ensureNumbers(){let max=Math.max(0,...CATCHES.map(c=>+c.no||0));const miss=CATCHES.filter(c=>!c.no).sort((a,b)=>(a.ts||0)-(b.ts||0));miss.forEach(c=>c.no=++max);if(miss.length)saveCatches();}
-function topCatch(){return [...CATCHES].sort((a,b)=>(+b.L||0)-(+a.L||0)||(b.ts||0)-(a.ts||0))[0];}
-
+const IMG={};
 let _db;
-function idb(){return new Promise((res,rej)=>{if(_db)return res(_db);const r=indexedDB.open('fishcollector',1);
-  r.onupgradeneeded=()=>{r.result.createObjectStore('img');};r.onsuccess=()=>{_db=r.result;res(_db);};r.onerror=()=>rej(r.error);});}
+function idb(){return new Promise((res,rej)=>{if(_db)return res(_db);const r=indexedDB.open('fishcollector',1);r.onupgradeneeded=()=>r.result.createObjectStore('img');r.onsuccess=()=>{_db=r.result;res(_db);};r.onerror=()=>rej(r.error);});}
 async function idbPut(k,v){const db=await idb();return new Promise((res,rej)=>{const tx=db.transaction('img','readwrite');tx.objectStore('img').put(v,k);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);});}
 async function idbGet(k){try{const db=await idb();return await new Promise((res,rej)=>{const tx=db.transaction('img','readonly');const rq=tx.objectStore('img').get(k);rq.onsuccess=()=>res(rq.result);rq.onerror=()=>rej(rq.error);});}catch(e){return null;}}
 async function idbDel(k){try{const db=await idb();await new Promise(res=>{const tx=db.transaction('img','readwrite');tx.objectStore('img').delete(k);tx.oncomplete=()=>res();});}catch(e){}}
 async function prefetchImages(){for(const c of CATCHES){if(!IMG[c.id])IMG[c.id]={};if(!IMG[c.id].stk)IMG[c.id].stk=await idbGet('stk_'+c.id)||'';}}
+function ensureNumbers(){let max=Math.max(0,...CATCHES.map(c=>+c.no||0));const miss=CATCHES.filter(c=>!c.no).sort((a,b)=>(a.ts||0)-(b.ts||0));miss.forEach(c=>c.no=++max);if(miss.length)saveCatches();}
 
-/* =================== HELPERS =================== */
-function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
-function bestLen(name){const n=name.toLowerCase();return Math.max(0,...CATCHES.filter(c=>c.name.toLowerCase()===n).map(c=>+c.L||0));}
-function isTrophy(c){return c.L>0 && +c.L>=bestLen(c.name);}
-function uniqNames(){return [...new Set(CATCHES.map(c=>c.name.toLowerCase()))];}
-function uniqPlaces(){return [...new Set(CATCHES.map(c=>(c.place||'').trim().toLowerCase()).filter(Boolean))];}
+/* ===== domain helpers ===== */
+function catchesOfSpecies(id){return CATCHES.filter(c=>c.sid===id).sort((a,b)=>(b.ts||0)-(a.ts||0));}
+function isDiscovered(id){return CATCHES.some(c=>c.sid===id);}
+function rarityOf(c){const d=c.sid?dexById(c.sid):null;return d?d.rar:sizeRarity(c.L);}
+function bestLenSpecies(id){return Math.max(0,...CATCHES.filter(c=>c.sid===id).map(c=>+c.L||0));}
+function bestLenName(name){const n=(name||'').toLowerCase();return Math.max(0,...CATCHES.filter(c=>(c.name||'').toLowerCase()===n).map(c=>+c.L||0));}
+function isTrophy(c){return c.L>0 && +c.L>=bestLenName(c.name);}
+function esc(s){return String(s==null?'':s).replace(/[<>&"]/g,m=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[m]));}
+function fmtDate(ts){return ts?new Date(ts).toLocaleDateString(LANG,{day:'2-digit',month:'short',year:'2-digit'}):'';}
+function shortPlace(p){p=(p||'').trim();const m=p.match(/(-?\d+\.\d+)[,\s]+(-?\d+\.\d+)/);if(m)return(+m[1]).toFixed(2)+', '+(+m[2]).toFixed(2);return p.length>16?p.slice(0,15)+'…':p;}
 
-async function loadBitmap(src){
-  try{ if(typeof src!=='string'&&'createImageBitmap'in window) return await createImageBitmap(src,{imageOrientation:'from-image'}); }catch(e){}
-  return await new Promise((res,rej)=>{const im=new Image();im.crossOrigin='anonymous';im.onload=()=>res(im);im.onerror=rej;im.src=typeof src==='string'?src:URL.createObjectURL(src);});
-}
-function bmpToDataURL(bmp,max,type,q){let w=bmp.width,h=bmp.height;const s=Math.min(1,max/Math.max(w,h));w=Math.round(w*s);h=Math.round(h*s);const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(bmp,0,0,w,h);return c.toDataURL(type||'image/jpeg',q||.85);}
-
-/* simple corner flood-fill background removal (offline fallback) */
-function floodRemove(bmp,tol){
-  let w=bmp.width,h=bmp.height;const s=Math.min(1,1000/Math.max(w,h));w=Math.round(w*s);h=Math.round(h*s);
-  const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.drawImage(bmp,0,0,w,h);
-  const id=x.getImageData(0,0,w,h),d=id.data,seen=new Uint8Array(w*h),st=[];
-  const corners=[[0,0],[w-1,0],[0,h-1],[w-1,h-1]];let br=0,bg=0,bb=0;
-  corners.forEach(([cx,cy])=>{const i=(cy*w+cx)*4;br+=d[i];bg+=d[i+1];bb+=d[i+2];});br/=4;bg/=4;bb/=4;
-  corners.forEach(([cx,cy])=>st.push(cy*w+cx));const T=(tol||62)**2;
-  while(st.length){const p=st.pop();if(seen[p])continue;seen[p]=1;const i=p*4;
-    const dr=d[i]-br,dg=d[i+1]-bg,db=d[i+2]-bb;if(dr*dr+dg*dg+db*db>T)continue;
-    d[i+3]=0;const px=p%w,py=(p/w)|0;
-    if(px>0)st.push(p-1);if(px<w-1)st.push(p+1);if(py>0)st.push(p-w);if(py<h-1)st.push(p+w);}
-  x.putImageData(id,0,0);return c;
-}
-/* white die-cut outline around a transparent cutout */
-function makeSticker(src,outline){
-  let w=src.width,h=src.height;const s=Math.min(1,760/Math.max(w,h));w=Math.round(w*s);h=Math.round(h*s);
-  const m=outline||Math.max(8,Math.round(Math.max(w,h)*0.035)),pad=m+8,cw=w+pad*2,ch=h+pad*2;
-  const base=document.createElement('canvas');base.width=w;base.height=h;base.getContext('2d').drawImage(src,0,0,w,h);
-  const off=document.createElement('canvas');off.width=cw;off.height=ch;const ox=off.getContext('2d');
-  const steps=36;for(let i=0;i<steps;i++){const a=i/steps*Math.PI*2;ox.drawImage(base,pad+Math.cos(a)*m,pad+Math.sin(a)*m);}
-  for(let i=0;i<steps;i++){const a=i/steps*Math.PI*2;ox.drawImage(base,pad+Math.cos(a)*m*.55,pad+Math.sin(a)*m*.55);}
-  ox.globalCompositeOperation='source-in';ox.fillStyle='#fff';ox.fillRect(0,0,cw,ch);ox.globalCompositeOperation='source-over';
-  const out=document.createElement('canvas');out.width=cw;out.height=ch;const x=out.getContext('2d');
-  x.drawImage(off,0,0);x.drawImage(base,pad,pad);return out;
-}
-
-/* AI background removal via CDN (lazy) */
-let _bgmod;
-async function aiRemove(file,onP){
-  if(!_bgmod_loading)_bgmod_loading=import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.6.0/+esm');
-  const mod=await _bgmod_loading;
-  const blob=await mod.removeBackground(file,{progress:(k,c,total)=>{onP&&onP(total?c/total:0);},output:{format:'image/png'}});
-  return await loadBitmap(blob);
-}
-let _bgmod_loading=null;
-
-/* =================== RENDER =================== */
-let curSort='size';
+/* ===== render ===== */
+let VIEW='collection', idxFilter='all', collSort='top';
 function applyLang(){
   document.documentElement.lang=LANG;
-  $('splashSub').textContent=t('splashSub'); $('heroTitle').innerHTML=t('heroTitle');
-  $('heroBlurb').textContent=t('heroBlurb'); $('ctaB').textContent=t('ctaB'); $('fabTxt').textContent=t('fabTxt');
-  $('sectTitle').textContent=t('sectTitle'); $('featLbl').textContent=t('featLbl');
-  document.querySelectorAll('[data-i18n]').forEach(e=>e.textContent=t(e.dataset.i18n));
+  $('splashSub').textContent=t('splashSub');$('navIndex').textContent=t('navIndex');$('navColl').textContent=t('navColl');
+  $('rbCatchL').textContent=t('rbCatch');$('rbTrophL').textContent=t('rbTroph');$('rbLegL').textContent=t('rbLeg');
   document.querySelectorAll('#langSel button').forEach(b=>b.classList.toggle('on',b.dataset.l===LANG));
-  renderTools(); renderGrid(); renderStats();
+  renderAll();
 }
-function renderTools(){
+function renderAll(){renderRibbon();renderHeaderTools();renderGrid();}
+function renderRibbon(){
+  const disc=DEX.filter(d=>isDiscovered(d.id)).length;
+  const troph=CATCHES.filter(isTrophy).length;
+  const leg=CATCHES.filter(c=>rarityOf(c)==='legendary').length;
+  $('rbDisc').textContent=disc;$('rbTot').textContent='/'+DEX.length;
+  $('rbCatch').textContent=CATCHES.reduce((a,c)=>a+(+c.qty||1),0);
+  $('rbTroph').textContent=troph;$('rbLeg').textContent=leg;
+  $('rbBar').style.width=Math.round(disc/DEX.length*100)+'%';
+}
+function renderHeaderTools(){
+  document.querySelectorAll('#nav button[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===VIEW));
+  $('vTitle').textContent=VIEW==='index'?t('tIndex'):t('tColl');
   const w=$('tools');w.innerHTML='';
-  [['size','sortSize'],['new','sortNew'],['name','sortName'],['trophy','sortTrophy']].forEach(([k,lab])=>{
-    const c=el('button','chip'+(curSort===k?' on':''),'[ '+t(lab)+' ]');c.onclick=()=>{curSort=k;renderTools();renderGrid();};w.appendChild(c);});
-}
-function sortedCatches(){
-  let list=[...CATCHES];
-  if(curSort==='trophy')list=list.filter(isTrophy);
-  if(curSort==='size')list.sort((a,b)=>(+b.L||0)-(+a.L||0)||b.ts-a.ts);
-  else if(curSort==='new')list.sort((a,b)=>b.ts-a.ts);
-  else if(curSort==='name')list.sort((a,b)=>a.name.localeCompare(b.name)||(+b.L||0)-(+a.L||0));
-  else list.sort((a,b)=>(+b.L||0)-(+a.L||0));
-  return list;
-}
-function fmtDate(ts){return ts?new Date(ts).toLocaleDateString(LANG,{day:'2-digit',month:'short',year:'2-digit'}):'';}
-function renderGrid(){
-  const g=$('grid');g.innerHTML='';$('tagCount').textContent=CATCHES.length;
-  if(!CATCHES.length){
-    const e=el('div','empty');e.innerHTML=`<div class="ef">${FISH_SIL}</div><h3 class="anton">${t('emptyH')}</h3><p>${t('emptyP')}</p>
-      <button class="btn pri" id="emptyAdd"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> ${t('ctaB')}</button>`;
-    g.style.display='grid';g.appendChild(e);$('emptyAdd').onclick=()=>openForm();return;
+  if(VIEW==='index'){
+    [['all','all'],['salt','colSalt'],['deep','colDeep'],['fresh','colFresh'],['game','colGame']].forEach(([k,lab])=>{
+      const c=el('button','chip'+(idxFilter===k?' on':''),'[ '+t(lab)+' ]');c.onclick=()=>{idxFilter=k;renderHeaderTools();renderGrid();};w.appendChild(c);});
+    $('vCnt').textContent=DEX.filter(d=>isDiscovered(d.id)).length+' / '+DEX.length;
+  }else{
+    [['top','sortTop'],['size','sortSize'],['new','sortNew'],['name','sortName']].forEach(([k,lab])=>{
+      const c=el('button','chip'+(collSort===k?' on':''),'[ '+t(lab)+' ]');c.onclick=()=>{collSort=k;renderHeaderTools();renderGrid();};w.appendChild(c);});
+    $('vCnt').textContent=CATCHES.length+'';
   }
-  g.style.display='grid';
-  sortedCatches().forEach((c,i)=>g.appendChild(itemEl(c,i)));
 }
-function unit(){return LANG==='ru'?'см':'cm';}
-function itemEl(c,i){
-  const node=el('div','item');node.style.setProperty('--d',(i*0.045)+'s');
-  node.tabIndex=0;node.setAttribute('role','button');node.setAttribute('aria-label',c.name+(c.L?', '+c.L+' '+unit():''));
-  const stk=(IMG[c.id]&&IMG[c.id].stk)||'';
-  const meta=[(+c.L?`<span class="big">${c.L} ${unit()}</span>`:''),
-    (c.place?`<span>${esc(shortPlace(c.place))}</span>`:''),(c.ts?`<span>${fmtDate(c.ts)}</span>`:'')].filter(Boolean).join('');
+function renderGrid(){VIEW==='index'?renderIndex():renderCollection();}
+function renderIndex(){
+  const g=$('grid');g.innerHTML='';g.style.display='grid';
+  let list=DEX.map((d,i)=>({d,i})).filter(x=>idxFilter==='all'||x.d.col===idxFilter);
+  if(!list.length){g.appendChild(emptyEl('emptyIH','emptyIP'));return;}
+  list.forEach((x,k)=>g.appendChild(dexEl(x.d,k)));
+}
+function dexEl(d,k){
+  const disc=isDiscovered(d.id),best=bestLenSpecies(d.id);
+  const node=el('div','dexi'+(disc?'':' locked'));node.dataset.r=d.rar;node.style.setProperty('--rc',RCOL[d.rar]);node.style.setProperty('--d',(k*0.035)+'s');
+  node.tabIndex=0;node.setAttribute('role','button');node.setAttribute('aria-label',disc?dexName(d):t('notDiscovered'));
   node.innerHTML=`<div class="frame">
-      <div class="idx mono">№${String(c.no||i+1).padStart(2,'0')}</div>${isTrophy(c)?`<div class="troph" title="${t('trophy')}">${TROPHY_SVG}</div>`:''}
-      ${stk?`<img class="stk" src="${stk}" alt="${esc(c.name)}"/>`:`<div class="stk" style="color:#e7eef2;opacity:.5;width:80%">${FISH_SIL}</div>`}
-      <div class="sheen"></div></div>
-    <div class="cap"><div class="nm">${esc(c.name)}</div><div class="meta">${meta||'<span>—</span>'}</div></div>`;
-  node.addEventListener('click',()=>openCard(c));
-  node.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openCard(c);}});
+      <div class="num mono">№${String(dexNum(d.id)).padStart(3,'0')}</div><div class="dot"></div>
+      <div class="art">${FISH[d.sil]||''}</div>
+    </div>
+    <div class="cap"><div class="nm">${disc?dexName(d):'?????'}</div>
+      <div class="meta"><span class="rk">● ${rarLabel(d.rar)}</span>${disc&&best?`<span class="big">${best} ${unit()}</span>`:''}</div></div>`;
+  const open=()=>openSpecies(d);
+  node.addEventListener('click',open);node.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}});
   return node;
 }
-function shortPlace(p){p=p.trim();const m=p.match(/(-?\d+\.\d+)[,\s]+(-?\d+\.\d+)/);if(m)return(+m[1]).toFixed(2)+', '+(+m[2]).toFixed(2);return p.length>16?p.slice(0,15)+'…':p;}
-function esc(s){return String(s==null?'':s).replace(/[<>&"]/g,m=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[m]));}
-
-function renderStats(){
-  const n=CATCHES.length,sp=uniqNames().length,rec=Math.max(0,...CATCHES.map(c=>+c.L||0)),pl=uniqPlaces().length;
-  const tr=CATCHES.filter(isTrophy).length;
-  $('fCount').textContent=n;$('sSpecies').textContent=sp;$('sRecord').textContent=rec||0;$('sPlaces').textContent=pl;$('sTroph').textContent=tr;
-  $('fBar').style.width=Math.min(100,n*8)+'%';
-  // stage = signature: feature the user's biggest sticker (or invite first catch)
-  const top=topCatch(),sc=$('stageCard'),cap=$('stageCap');$('stageTag').textContent=t('topSpecimen');
-  if(top&&IMG[top.id]&&IMG[top.id].stk){
-    sc.innerHTML=`<img src="${IMG[top.id].stk}" alt="${esc(top.name)}"/>`;
-    cap.innerHTML=`<b>${esc(top.name)}</b>${top.L?' · '+top.L+' '+unit():''}${top.place?'<br>'+esc(shortPlace(top.place)):''}`;
-    sc.onclick=()=>openCard(top);
-  }else{
-    sc.innerHTML=`<div class="ghost">${FISH_SIL}</div>`;cap.textContent=t('stageEmpty');sc.onclick=()=>openForm();
-  }
-  tiltLite(sc);
+function sortedCatches(){let l=[...CATCHES];
+  if(collSort==='top')l.sort((a,b)=>(RW[rarityOf(b)]-RW[rarityOf(a)])||(+b.L||0)-(+a.L||0)||b.ts-a.ts);
+  else if(collSort==='size')l.sort((a,b)=>(+b.L||0)-(+a.L||0)||b.ts-a.ts);
+  else if(collSort==='new')l.sort((a,b)=>b.ts-a.ts);
+  else l.sort((a,b)=>a.name.localeCompare(b.name)||(+b.L||0)-(+a.L||0));
+  return l;}
+function renderCollection(){
+  const g=$('grid');g.innerHTML='';g.style.display='grid';
+  if(!CATCHES.length){g.appendChild(emptyEl('emptyCH','emptyCP'));return;}
+  sortedCatches().forEach((c,i)=>g.appendChild(catchEl(c,i)));
 }
-function tiltLite(node){if(!node)return;const wrap=node.parentElement;
-  wrap.onpointermove=e=>{const r=wrap.getBoundingClientRect();const px=(e.clientX-r.left)/r.width-.5,py=(e.clientY-r.top)/r.height-.5;node.style.transform=`rotateY(${px*16}deg) rotateX(${-py*16}deg)`;};
-  wrap.onpointerleave=()=>{node.style.transform='';};}
+function catchEl(c,i){
+  const r=rarityOf(c);const node=el('div','item');node.dataset.r=r;node.style.setProperty('--rc',RCOL[r]);node.style.setProperty('--d',(i*0.04)+'s');
+  node.tabIndex=0;node.setAttribute('role','button');node.setAttribute('aria-label',c.name+(c.L?', '+c.L+' '+unit():''));
+  const stk=(IMG[c.id]&&IMG[c.id].stk)||'';
+  const meta=[(+c.L?`<span class="big">${c.L} ${unit()}</span>`:''),(c.place?`<span>${esc(shortPlace(c.place))}</span>`:''),(c.ts?`<span>${fmtDate(c.ts)}</span>`:'')].filter(Boolean).join('');
+  node.innerHTML=`<div class="frame">
+      <div class="num mono">№${String(c.no||i+1).padStart(3,'0')}</div><div class="dot"></div>
+      ${stk?`<img class="stk" src="${stk}" alt="${esc(c.name)}"/>`:`<div class="art" style="opacity:.5">${FISH[(c.sid&&dexById(c.sid)&&dexById(c.sid).sil)||'treska']}</div>`}
+      ${isTrophy(c)?`<div class="troph">${TROPHY_SVG}</div>`:''}<div class="sheen"></div></div>
+    <div class="cap"><div class="nm">${esc(c.name)}</div><div class="meta"><span class="rk">● ${rarLabel(r)}</span>${meta}</div></div>`;
+  node.addEventListener('click',()=>openCatch(c));node.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openCatch(c);}});
+  return node;
+}
+function emptyEl(h,p){const e=el('div','empty');e.innerHTML=`<div class="ef">${FISH.treska}</div><h3 class="anton">${t(h)}</h3><p>${t(p)}</p><button class="btn pri" id="emptyAdd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h4l2-3h6l2 3h4v13H3z"/><circle cx="12" cy="13" r="4"/></svg> ${t('add')}</button>`;setTimeout(()=>{const b=$('emptyAdd');if(b)b.onclick=()=>openForm();},0);return e;}
 
-/* =================== SHEETS =================== */
+/* ===== sheets ===== */
 function openSheet(id){$('scrim').classList.add('open');$(id).classList.add('open');document.body.style.overflow='hidden';}
 function closeSheets(){$('scrim').classList.remove('open');['cardSheet','formSheet','orderSheet'].forEach(i=>$(i).classList.remove('open'));document.body.style.overflow='';}
 
-async function openCard(c){
-  if(!IMG[c.id])IMG[c.id]={};
-  if(IMG[c.id].org===undefined)IMG[c.id].org=c.hasPhoto?(await idbGet('org_'+c.id)||''):'';
-  const stk=IMG[c.id].stk||'',org=IMG[c.id].org||'';
-  const idx=c.no||(sortedCatches().findIndex(x=>x.id===c.id)+1);
-  const place=c.place||(c.lat?`${(+c.lat).toFixed(4)}, ${(+c.lon).toFixed(4)}`:t('noRec'));
-  const when=c.ts?new Date(c.ts).toLocaleString(LANG,{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):t('noRec');
-  const rec=bestLen(c.name);
-  const cc=$('cardContent');
+function openSpecies(d){
+  const disc=isDiscovered(d.id);const cs=catchesOfSpecies(d.id);const best=bestLenSpecies(d.id);
+  const cc=$('cardContent');cc.style.setProperty('--rc',RCOL[d.rar]);
+  const recs=disc?cs.map(c=>recHTML(c)).join(''):`<div class="norec">[ ${t('notDiscovered').toUpperCase()} ]<br>${t('photographHint')}</div>`;
   cc.innerHTML=`
     <div class="cardtop">
-      <div class="num mono">${t('cardSpecimen')} №${String(idx).padStart(2,'0')} / ${CATCHES.length}</div>
-      <div class="photo${org?' has':''}" style="${org?`background-image:url(${org})`:''}"></div>
+      <div class="num mono">№${String(dexNum(d.id)).padStart(3,'0')} / ${DEX.length}</div>
       <div class="scan"></div>
-      <div class="card3d" id="card3d">${stk?`<img src="${stk}" alt="${esc(c.name)}"/>`:`<div style="color:#e7eef2">${FISH_SIL}</div>`}</div>
+      <div class="card3d" id="card3d"><div class="art">${FISH[d.sil]||''}</div></div>
     </div>
     <div class="cardbody">
-      <div class="ttl"><h2 class="anton">${esc(c.name)}</h2>${isTrophy(c)?`<span class="trf">${TROPHY_SVG} ${t('trophy')}</span>`:''}</div>
+      <div class="ttl"><h2 class="anton">${disc?dexName(d):'?????'}</h2><span class="rar">${rarLabel(d.rar)}</span></div>
+      <p class="lat">${d.lat}</p>
       <div class="specgrid">
-        <div class="spec"><div class="k">${t('kSize')}</div><div class="v">${c.L?c.L+' '+(LANG==='no'?'cm':'см'):t('noRec')}${(+c.qty>1)?' · ×'+c.qty:''}</div></div>
-        <div class="spec"><div class="k">${t('kRecord')}</div><div class="v">${rec?rec+' '+(LANG==='no'?'cm':'см'):t('noRec')}</div></div>
+        <div class="spec"><div class="k">${t('kCollection')}</div><div class="v sm">${colLabel(d.col)}</div></div>
+        <div class="spec"><div class="k">${t('kRecord')}</div><div class="v">${best?best+' '+unit():t('noRec')}</div></div>
+      </div>
+      <div class="rhdr">${t('recHdr')} · ${cs.length}</div>
+      ${recs}
+      <div class="btnrow"><button class="btn pri" id="spAdd"><svg viewBox="0 0 24 24"><path d="M3 7h4l2-3h6l2 3h4v13H3z"/><circle cx="12" cy="13" r="4"/></svg> ${t('add')}</button></div>
+    </div>`;
+  openSheet('cardSheet');$('cardSheet').scrollTop=0;bindTilt($('card3d'));
+  $('spAdd').onclick=()=>{closeSheets();setTimeout(()=>openForm(dexName(d)),260);};
+  bindRecDelete(cc,()=>openSpecies(d));
+}
+function openCatch(c){
+  if(!IMG[c.id])IMG[c.id]={};
+  Promise.resolve(IMG[c.id].org!==undefined?IMG[c.id].org:(c.hasPhoto?idbGet('org_'+c.id):'')).then(org=>{
+    IMG[c.id].org=org||'';renderCatch(c,IMG[c.id].stk||'',IMG[c.id].org||'');
+  });
+}
+function renderCatch(c,stk,org){
+  const r=rarityOf(c);const d=c.sid?dexById(c.sid):null;
+  const when=c.ts?new Date(c.ts).toLocaleString(LANG,{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):t('noRec');
+  const place=c.place||(c.lat?`${(+c.lat).toFixed(4)}, ${(+c.lon).toFixed(4)}`:t('noRec'));
+  const rec=bestLenName(c.name);
+  const cc=$('cardContent');cc.style.setProperty('--rc',RCOL[r]);
+  cc.innerHTML=`
+    <div class="cardtop">
+      <div class="num mono">№${String(c.no||0).padStart(3,'0')}</div>
+      <div class="photo${org?' has':''}" style="${org?`background-image:url(${org})`:''}"></div><div class="scan"></div>
+      <div class="card3d" id="card3d">${stk?`<img src="${stk}" alt="${esc(c.name)}"/>`:`<div class="art">${FISH[(d&&d.sil)||'treska']}</div>`}</div>
+    </div>
+    <div class="cardbody">
+      <div class="ttl"><h2 class="anton">${esc(c.name)}</h2><span class="rar">${rarLabel(r)}</span></div>
+      ${d?`<p class="lat">${d.lat}</p>`:''}
+      <div class="specgrid">
+        <div class="spec"><div class="k">${t('kSize')}</div><div class="v">${c.L?c.L+' '+unit():t('noRec')}${(+c.qty>1)?' · ×'+c.qty:''}</div></div>
+        <div class="spec"><div class="k">${t('kRecord')}</div><div class="v">${rec?rec+' '+unit():t('noRec')}</div></div>
         <div class="spec full"><div class="k">${t('kWhen')}</div><div class="v sm">${when}</div></div>
         <div class="spec full"><div class="k">${t('kPlace')}</div><div class="v sm">${esc(place)}</div></div>
         ${c.method?`<div class="spec full"><div class="k">${t('kMethod')}</div><div class="v sm">${esc(c.method)}</div></div>`:''}
       </div>
-      ${c.note?`<p class="note">«${esc(c.note)}»</p>`:''}
-      ${org?`<div class="origph"><img src="${org}" alt="${t('origPhoto')}"/></div><div class="origcap">[ ${t('origPhoto')} ]</div>`:''}
+      ${c.note?`<p class="note" style="color:var(--cap);font-style:italic;font-size:13.5px;line-height:1.6">«${esc(c.note)}»</p>`:''}
+      ${org?`<div class="origph"><img src="${org}" alt=""/></div><div class="origcap">[ ${t('origPhoto')} ]</div>`:''}
+      ${isTrophy(c)?`<div class="rec" style="text-align:center;color:var(--gold);font-family:'Space Mono';font-size:11px">${TROPHY_SVG} ${t('trophy')}</div>`:''}
       <div class="btnrow">
         <button class="btn ghost" id="cAdd"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> ${t('bAdd')}</button>
-        <button class="btn pri" id="cDl"><svg viewBox="0 0 24 24"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg> ${t('bDl')}</button>
-        <button class="btn gold" id="cOrder"><svg viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg> ${t('bOrder')}</button>
+        <button class="btn pri" id="cShare"><svg viewBox="0 0 24 24"><path d="M4 12v8h16v-8M12 16V3M7 8l5-5 5 5"/></svg> ${t('share')}</button>
+        <button class="btn gold" id="cDl"><svg viewBox="0 0 24 24"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg> ${t('bDl')}</button>
       </div>
-      <div class="btnrow"><button class="btn danger" id="cDel"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button></div>
+      <div class="btnrow">
+        <button class="btn ghost" id="cOrder" style="flex:1"><svg viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg> ${t('bOrder')}</button>
+        <button class="btn danger" id="cDel"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button>
+      </div>
     </div>`;
   openSheet('cardSheet');$('cardSheet').scrollTop=0;bindTilt($('card3d'));
   $('cAdd').onclick=()=>{closeSheets();setTimeout(()=>openForm(c.name),260);};
+  $('cShare').onclick=()=>shareCatch(c);
   $('cDl').onclick=()=>downloadSticker(c);
   $('cOrder').onclick=()=>{closeSheets();setTimeout(()=>openOrder(c.id),260);};
-  $('cDel').onclick=async()=>{if(!confirm(t('del')))return;CATCHES=CATCHES.filter(x=>x.id!==c.id);saveCatches();await idbDel('stk_'+c.id);await idbDel('org_'+c.id);delete IMG[c.id];closeSheets();renderGrid();renderStats();toast(t('deleted'));};
+  $('cDel').onclick=async()=>{if(!confirm(t('del')))return;CATCHES=CATCHES.filter(x=>x.id!==c.id);saveCatches();await idbDel('stk_'+c.id);await idbDel('org_'+c.id);delete IMG[c.id];closeSheets();renderAll();toast(t('deleted'));};
+}
+function recHTML(c){
+  const when=c.ts?new Date(c.ts).toLocaleString(LANG,{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+  const place=c.place||(c.lat?`${(+c.lat).toFixed(4)}, ${(+c.lon).toFixed(4)}`:'—');
+  const stk=(IMG[c.id]&&IMG[c.id].stk)||'';
+  return `<div class="rec" data-open="${c.id}" style="cursor:pointer">
+    <div class="rh"><span>${when}</span>${isTrophy(c)?`<span class="t">${t('trophy')}</span>`:''}</div>
+    <div class="rrow">${c.L?`<span>${unit()==='см'?'размер':'size'} <b>${c.L} ${unit()}</b></span>`:''}${(+c.qty>1)?`<span>×${c.qty}</span>`:''}<span>${esc(place)}</span></div>
+    ${stk?`<div class="rphoto"><img src="${stk}" alt=""/></div>`:''}
+    <div class="del"><button data-del="${c.id}">✕ ${t('del').replace('?','')}</button></div></div>`;
+}
+function bindRecDelete(root,refresh){
+  root.querySelectorAll('[data-del]').forEach(b=>b.onclick=async e=>{e.stopPropagation();const id=b.dataset.del;CATCHES=CATCHES.filter(x=>x.id!==id);saveCatches();await idbDel('stk_'+id);await idbDel('org_'+id);delete IMG[id];renderAll();refresh();toast(t('deleted'));});
+  root.querySelectorAll('[data-open]').forEach(r=>r.addEventListener('click',e=>{if(e.target.closest('[data-del]'))return;const c=CATCHES.find(x=>x.id===r.dataset.open);if(c)openCatch(c);}));
 }
 function bindTilt(node){if(!node)return;const wrap=node.parentElement;
-  wrap.onpointermove=e=>{const r=wrap.getBoundingClientRect();const px=(e.clientX-r.left)/r.width-.5,py=(e.clientY-r.top)/r.height-.5;node.style.transform=`rotateY(${px*20}deg) rotateX(${-py*20}deg) translateZ(20px)`;};
+  wrap.onpointermove=e=>{const r=wrap.getBoundingClientRect();const px=(e.clientX-r.left)/r.width-.5,py=(e.clientY-r.top)/r.height-.5;node.style.transform=`rotateY(${px*20}deg) rotateX(${-py*20}deg) translateZ(18px)`;};
   wrap.onpointerleave=()=>{node.style.transform='';};
-  if(window.DeviceOrientationEvent)window.addEventListener('deviceorientation',e=>{if(e.gamma==null)return;const px=Math.max(-1,Math.min(1,e.gamma/30)),py=Math.max(-1,Math.min(1,(e.beta-45)/30));node.style.transform=`rotateY(${px*14}deg) rotateX(${-py*14}deg)`;});
-}
+  if(window.DeviceOrientationEvent)window.addEventListener('deviceorientation',e=>{if(e.gamma==null)return;const px=Math.max(-1,Math.min(1,e.gamma/30)),py=Math.max(-1,Math.min(1,(e.beta-45)/30));node.style.transform=`rotateY(${px*14}deg) rotateX(${-py*14}deg)`;});}
 
-/* =================== FORM =================== */
-let F={orig:null,stk:null,bmp:null}; // current sticker state
+/* ===== add form + cutout ===== */
+let F={orig:null,stk:null,bmp:null};
 function openForm(presetName){
   F={orig:null,stk:null,bmp:null};
   const now=new Date();now.setMinutes(now.getMinutes()-now.getTimezoneOffset());
-  const datal=NAMES[LANG].map(n=>`<option value="${n}">`).join('');
+  const names=[...new Set([...DEX.map(dexName),...CATCHES.map(c=>c.name)])];
+  const datal=names.map(n=>`<option value="${esc(n)}">`).join('');
   $('formContent').innerHTML=`
     <div class="form">
       <h2 class="anton">${t('formTitle')}</h2><div class="sub">${t('formSub')}</div>
       <div class="field"><label>${t('fPhoto')}</label>
-        <div class="studio empty-st" id="studio">
-          <svg viewBox="0 0 24 24"><path d="M3 7h4l2-3h6l2 3h4v13H3z"/><circle cx="12" cy="13" r="4"/></svg>
-          <div class="t">${t('photoPick')}</div>
-        </div>
+        <div class="studio empty-st" id="studio"><svg viewBox="0 0 24 24"><path d="M3 7h4l2-3h6l2 3h4v13H3z"/><circle cx="12" cy="13" r="4"/></svg><div class="t">${t('photoPick')}</div></div>
         <input id="fPhoto" type="file" accept="image/*" hidden/>
-        <div class="studio-acts" id="studioActs" style="display:none">
-          <button id="aRetake">${t('retake')}</button>
-          <button id="aSimple">${t('cutSimple')}</button>
-          <button id="aKeep">${t('keepOrig')}</button>
-        </div>
-      </div>
+        <div class="studio-acts" id="studioActs" style="display:none"><button id="aRetake">${t('retake')}</button><button id="aSimple">${t('cutSimple')}</button><button id="aKeep">${t('keepOrig')}</button></div></div>
       <div class="field"><label>${t('fName')}</label><input id="fName" list="namelist" value="${presetName?esc(presetName):''}" placeholder="${t('fNamePh')}"/><datalist id="namelist">${datal}</datalist></div>
-      <div class="two">
-        <div class="field"><label>${t('fSize')}</label><input id="fL" type="number" inputmode="decimal" min="0" placeholder="—"/></div>
-        <div class="field"><label>${t('fQty')}</label><input id="fQ" type="number" min="1" value="1"/></div>
-      </div>
+      <div class="two"><div class="field"><label>${t('fSize')}</label><input id="fL" type="number" inputmode="decimal" min="0" placeholder="—"/></div>
+        <div class="field"><label>${t('fQty')}</label><input id="fQ" type="number" min="1" value="1"/></div></div>
       <div class="field"><label>${t('fDate')}</label><input id="fDt" type="datetime-local" value="${now.toISOString().slice(0,16)}"/></div>
-      <div class="field"><label>${t('fPlace')}</label><div class="geo"><input id="fPlace" placeholder="${t('fPlacePh')}"/>
-        <button id="fGeo" title="GPS"><svg viewBox="0 0 24 24"><path d="M12 2v3m0 14v3m10-10h-3M5 12H2"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg></button></div>
-        <div class="hint" id="fGeoHint">${t('gpsReady')}</div></div>
+      <div class="field"><label>${t('fPlace')}</label><div class="geo"><input id="fPlace" placeholder="${t('fPlacePh')}"/><button id="fGeo"><svg viewBox="0 0 24 24"><path d="M12 2v3m0 14v3m10-10h-3M5 12H2"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg></button></div><div class="hint" id="fGeoHint">${t('gpsReady')}</div></div>
       <div class="field"><label>${t('fMethod')}</label><input id="fMethod" placeholder="${t('fMethodPh')}"/></div>
       <div class="field"><label>${t('fNote')}</label><textarea id="fNote" placeholder="${t('fNotePh')}"></textarea></div>
-      <div class="btnrow"><button class="btn ghost" data-close>${t('cancel')}</button>
-        <button class="btn pri" id="fSave"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg> ${t('save')}</button></div>
+      <div class="btnrow"><button class="btn ghost" data-close>${t('cancel')}</button><button class="btn pri" id="fSave"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg> ${t('save')}</button></div>
     </div>`;
   openSheet('formSheet');$('formSheet').scrollTop=0;
   $('studio').onclick=()=>{if($('studio').classList.contains('empty-st'))$('fPhoto').click();};
@@ -678,162 +705,170 @@ function openForm(presetName){
   $('aKeep').onclick=()=>{if(F.bmp){F.stk=bmpToDataURL(F.bmp,760,'image/png');showStudio(F.stk,'ORIGINAL');}};
   $('formContent').querySelectorAll('[data-close]').forEach(b=>b.onclick=closeSheets);
 }
-function showStudio(src,badge,overlay){
-  const s=$('studio');s.classList.remove('empty-st');
-  s.innerHTML=`<div class="checker"></div><img class="prev" src="${src}"/>${badge?`<div class="badge mono">${badge}</div>`:''}${overlay||''}`;
-  $('studioActs').style.display='flex';
-}
-function showStudioLoading(label,pct){
-  const s=$('studio');s.classList.remove('empty-st');
-  s.innerHTML=`<div class="checker"></div>${F.orig?`<img class="prev" src="${F.orig}" style="opacity:.4"/>`:''}
-    <div class="ov"><div class="t">${label}</div><div class="pb"><i id="pbI" style="width:${Math.round((pct||0)*100)}%"></i></div></div>`;
-  $('studioActs').style.display='none';
-}
-async function onPhotoPick(e){
-  const file=e.target.files[0];if(!file)return;
-  showStudioLoading(t('cutting'),0);
-  try{ F.bmp=await loadBitmap(file); F.orig=bmpToDataURL(F.bmp,1000,'image/jpeg',.85);
-    await processSticker(file,'ai',F.bmp);
-  }catch(err){console.error(err);try{F.bmp=F.bmp||await loadBitmap(file);await processSticker(F.bmp,'simple');}catch(e2){toast('Не удалось обработать фото');}}
-  e.target.value='';
-}
+function showStudio(src,badge){const s=$('studio');s.classList.remove('empty-st');s.innerHTML=`<div class="checker"></div><img class="prev" src="${src}"/>${badge?`<div class="badge mono">${badge}</div>`:''}`;$('studioActs').style.display='flex';}
+function showStudioLoading(label,pct){const s=$('studio');s.classList.remove('empty-st');
+  s.innerHTML=`<div class="checker"></div>${F.orig?`<img class="prev" src="${F.orig}" style="opacity:.4"/>`:''}<div class="ov"><div class="t">${label}</div><div class="pb"><i id="pbI" style="width:${Math.round((pct||0)*100)}%"></i></div><button id="ovSimple" style="margin-top:4px;font-family:'Space Mono';font-size:11px;color:var(--ink);border:1px solid var(--line2);padding:8px 14px;background:var(--panel2)">${t('cutSimple')}</button></div>`;
+  $('studioActs').style.display='none';const b=$('ovSimple');if(b)b.onclick=()=>{if(F.bmp)processSticker(F.bmp,'simple');};}
+async function onPhotoPick(e){const file=e.target.files[0];if(!file)return;showStudioLoading(t('cutting'),0);
+  exifGPS(file).then(g=>{const pl=$('fPlace');if(g&&pl&&!pl.value.trim()){pl.value=g.lat.toFixed(4)+', '+g.lon.toFixed(4);const h=$('fGeoHint');if(h)h.textContent=t('gpsPhoto');}});
+  try{F.bmp=await loadBitmap(file);F.orig=bmpToDataURL(F.bmp,1000,'image/jpeg',.85);await processSticker(file,'ai',F.bmp);}
+  catch(err){console.error(err);try{F.bmp=F.bmp||await loadBitmap(file);await processSticker(F.bmp,'simple');}catch(e2){toast('—');}}
+  e.target.value='';}
 async function processSticker(input,mode,bmp){
   try{
-    if(mode==='ai'){
-      showStudioLoading(t('loadingModel'),0.05);
-      const cut=await aiRemove(input,p=>{const i=$('pbI');if(i)i.style.width=Math.round((0.05+p*0.9)*100)+'%';const lab=$('studio').querySelector('.ov .t');if(lab)lab.textContent=t('cutting');});
+    if(mode==='ai'){showStudioLoading(t('loadingModel'),0.05);
+      const cut=await aiRemove(input,p=>{const i=$('pbI');if(i)i.style.width=Math.round((0.05+p*0.9)*100)+'%';const lab=document.querySelector('#studio .ov .t');if(lab)lab.textContent=t('cutting');});
       F.stk=makeSticker(cut).toDataURL('image/png');showStudio(F.stk,'AI · '+t('cutDone'));
-    }else{
-      showStudioLoading(t('cutting'),0.4);
-      const cut=floodRemove(bmp||F.bmp,62);
-      F.stk=makeSticker(cut).toDataURL('image/png');showStudio(F.stk,t('cutDone'));
-    }
-  }catch(err){console.error(err);
-    if(mode==='ai'){toast('ИИ недоступен — простая вырезка');return processSticker(F.bmp,'simple');}
-    // last resort: keep original
-    F.stk=bmpToDataURL(F.bmp,760,'image/png');showStudio(F.stk,'ORIGINAL');
-  }
+    }else{showStudioLoading(t('cutting'),0.4);const cut=floodRemove(bmp||F.bmp,62);F.stk=makeSticker(cut).toDataURL('image/png');showStudio(F.stk,t('cutDone'));}
+  }catch(err){console.error(err);if(mode==='ai'){toast(t('aiUnavailable'));return processSticker(F.bmp,'simple');}F.stk=bmpToDataURL(F.bmp,760,'image/png');showStudio(F.stk,'ORIGINAL');}
 }
-function getGeo(){const hint=$('fGeoHint');
-  if(!navigator.geolocation){hint.textContent=t('gpsNo');return;}
-  hint.textContent=t('gpsWait');
-  navigator.geolocation.getCurrentPosition(p=>{$('fPlace').value=`${p.coords.latitude.toFixed(4)}, ${p.coords.longitude.toFixed(4)}`;hint.textContent=t('gpsOk');},
-    ()=>{hint.textContent=t('gpsFail');},{enableHighAccuracy:true,timeout:8000});}
+function getGeo(){const hint=$('fGeoHint');if(!navigator.geolocation){hint.textContent=t('gpsNo');return;}hint.textContent=t('gpsWait');
+  navigator.geolocation.getCurrentPosition(p=>{$('fPlace').value=`${p.coords.latitude.toFixed(4)}, ${p.coords.longitude.toFixed(4)}`;hint.textContent=t('gpsOk');},()=>{hint.textContent=t('gpsFail');},{enableHighAccuracy:true,timeout:8000});}
 async function saveCatch(){
-  const name=$('fName').value.trim();
-  if(!name){toast(t('needName'));$('fName').focus();return;}
+  const name=$('fName').value.trim();if(!name){toast(t('needName'));$('fName').focus();return;}
   if(!F.stk){toast(t('needPhoto'));return;}
-  const id=uid();
+  const d=resolveDex(name);const id=Date.now().toString(36)+Math.random().toString(36).slice(2,6);
   const place=$('fPlace').value.trim();
-  const c={id,no:Math.max(0,...CATCHES.map(x=>+x.no||0))+1,name,lang:LANG,L:parseFloat($('fL').value)||0,qty:Math.max(1,parseInt($('fQ').value)||1),
-    ts:$('fDt').value?new Date($('fDt').value).getTime():Date.now(),place,
-    method:$('fMethod').value.trim(),note:$('fNote').value.trim(),hasPhoto:!!F.orig};
+  const c={id,no:Math.max(0,...CATCHES.map(x=>+x.no||0))+1,sid:d?d.id:null,name:d?dexName(d):name,lang:LANG,
+    L:parseFloat($('fL').value)||0,qty:Math.max(1,parseInt($('fQ').value)||1),
+    ts:$('fDt').value?new Date($('fDt').value).getTime():Date.now(),place,method:$('fMethod').value.trim(),note:$('fNote').value.trim(),hasPhoto:!!F.orig};
   const m=place.match(/(-?\d+\.\d+)[,\s]+(-?\d+\.\d+)/);if(m){c.lat=+m[1];c.lon=+m[2];}
-  await idbPut('stk_'+id,F.stk); if(F.orig)await idbPut('org_'+id,F.orig);
-  IMG[id]={stk:F.stk,org:F.orig||''};
-  CATCHES.push(c);saveCatches();closeSheets();renderGrid();renderStats();
-  setTimeout(()=>celebrate(c),280);
+  const wasNew=d?!isDiscovered(d.id):true;
+  await idbPut('stk_'+id,F.stk);if(F.orig)await idbPut('org_'+id,F.orig);
+  IMG[id]={stk:F.stk,org:F.orig||''};CATCHES.push(c);saveCatches();closeSheets();renderAll();
+  setTimeout(()=>celebrate(c,wasNew),300);
 }
 
-/* =================== DOWNLOAD STICKER (cutout+outline+label) =================== */
-async function downloadSticker(c){
-  toast(t('cutting').replace('…','')+'…');
+/* ===== image utils ===== */
+async function loadBitmap(src){try{if(typeof src!=='string'&&'createImageBitmap'in window)return await createImageBitmap(src,{imageOrientation:'from-image'});}catch(e){}
+  return await new Promise((res,rej)=>{const im=new Image();im.crossOrigin='anonymous';im.onload=()=>res(im);im.onerror=rej;im.src=typeof src==='string'?src:URL.createObjectURL(src);});}
+function bmpToDataURL(bmp,max,type,q){let w=bmp.width,h=bmp.height;const s=Math.min(1,max/Math.max(w,h));w=Math.round(w*s);h=Math.round(h*s);const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(bmp,0,0,w,h);return c.toDataURL(type||'image/jpeg',q||.85);}
+// extract GPS from JPEG EXIF (no deps)
+async function exifGPS(file){
   try{
-    await (document.fonts?document.fonts.ready:Promise.resolve());
-    const stk=IMG[c.id]&&IMG[c.id].stk; if(!stk){toast('—');return;}
-    const im=await loadBitmap(stk);
-    const W=im.width,labelH=Math.round(W*0.18),pad=20;
-    const cv=document.createElement('canvas');cv.width=W;cv.height=im.height+labelH;
-    const x=cv.getContext('2d');
-    x.drawImage(im,0,0);
-    // label (name + size) baked, white text with dark stroke = part of sticker
-    x.textAlign='center';const cx=W/2,by=im.height+labelH*0.5;
-    x.font=`${Math.round(labelH*0.5)}px Anton, sans-serif`;
-    x.lineJoin='round';x.lineWidth=Math.round(labelH*0.16);x.strokeStyle='#3f4a55';x.fillStyle='#ffffff';
-    x.strokeText(c.name.toUpperCase(),cx,by);x.fillText(c.name.toUpperCase(),cx,by);
-    if(c.L){x.font=`${Math.round(labelH*0.26)}px 'Space Mono', monospace`;const sz=c.L+' '+(LANG==='no'?'cm':'см');
-      x.lineWidth=Math.round(labelH*0.1);x.strokeText(sz,cx,by+labelH*0.36);x.fillText(sz,cx,by+labelH*0.36);}
-    const a=document.createElement('a');a.download=`sticker-${c.name.replace(/\s+/g,'-').toLowerCase()}.png`;a.href=cv.toDataURL('image/png');a.click();
-    burstConfetti();toast(t('dlReady'));
-  }catch(e){console.error(e);toast('—');}
+    const buf=await file.arrayBuffer();const v=new DataView(buf);if(v.getUint16(0)!==0xFFD8)return null;
+    let off=2;const len=v.byteLength;
+    while(off+4<len){const marker=v.getUint16(off);if((marker&0xFF00)!==0xFF00)break;const size=v.getUint16(off+2);
+      if(marker===0xFFE1&&v.getUint32(off+4)===0x45786966){ // "Exif"
+        const tiff=off+10;const little=v.getUint16(tiff)===0x4949;
+        const g16=o=>v.getUint16(o,little),g32=o=>v.getUint32(o,little);
+        const ifd0=tiff+g32(tiff+4);const n=g16(ifd0);let gps=0;
+        for(let i=0;i<n;i++){const e=ifd0+2+i*12;if(g16(e)===0x8825){gps=tiff+g32(e+8);break;}}
+        if(!gps)return null;
+        const gn=g16(gps);let latRef,lonRef,lat,lon;
+        const rat=o=>g32(o)/g32(o+4);const dms=o=>rat(o)+rat(o+8)/60+rat(o+16)/3600;
+        for(let i=0;i<gn;i++){const e=gps+2+i*12,tag=g16(e),vo=tiff+g32(e+8);
+          if(tag===1)latRef=String.fromCharCode(v.getUint8(e+8));
+          else if(tag===2)lat=dms(vo);
+          else if(tag===3)lonRef=String.fromCharCode(v.getUint8(e+8));
+          else if(tag===4)lon=dms(vo);}
+        if(lat==null||lon==null)return null;if(latRef==='S')lat=-lat;if(lonRef==='W')lon=-lon;
+        return {lat,lon};
+      }
+      off+=2+size;
+    }
+  }catch(e){}
+  return null;
 }
+function floodRemove(bmp,tol){let w=bmp.width,h=bmp.height;const s=Math.min(1,1000/Math.max(w,h));w=Math.round(w*s);h=Math.round(h*s);
+  const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.drawImage(bmp,0,0,w,h);
+  const id=x.getImageData(0,0,w,h),d=id.data,seen=new Uint8Array(w*h),st=[];const corners=[[0,0],[w-1,0],[0,h-1],[w-1,h-1]];let br=0,bg=0,bb=0;
+  corners.forEach(([cx,cy])=>{const i=(cy*w+cx)*4;br+=d[i];bg+=d[i+1];bb+=d[i+2];});br/=4;bg/=4;bb/=4;corners.forEach(([cx,cy])=>st.push(cy*w+cx));const T=(tol||62)**2;
+  while(st.length){const p=st.pop();if(seen[p])continue;seen[p]=1;const i=p*4;const dr=d[i]-br,dg=d[i+1]-bg,db=d[i+2]-bb;if(dr*dr+dg*dg+db*db>T)continue;d[i+3]=0;const px=p%w,py=(p/w)|0;if(px>0)st.push(p-1);if(px<w-1)st.push(p+1);if(py>0)st.push(p-w);if(py<h-1)st.push(p+w);}
+  x.putImageData(id,0,0);return c;}
+function makeSticker(src,outline){let w=src.width,h=src.height;const s=Math.min(1,760/Math.max(w,h));w=Math.round(w*s);h=Math.round(h*s);
+  const m=outline||Math.max(8,Math.round(Math.max(w,h)*0.035)),pad=m+8,cw=w+pad*2,ch=h+pad*2;
+  const base=document.createElement('canvas');base.width=w;base.height=h;base.getContext('2d').drawImage(src,0,0,w,h);
+  const off=document.createElement('canvas');off.width=cw;off.height=ch;const ox=off.getContext('2d');const steps=36;
+  for(let i=0;i<steps;i++){const a=i/steps*Math.PI*2;ox.drawImage(base,pad+Math.cos(a)*m,pad+Math.sin(a)*m);}
+  for(let i=0;i<steps;i++){const a=i/steps*Math.PI*2;ox.drawImage(base,pad+Math.cos(a)*m*.55,pad+Math.sin(a)*m*.55);}
+  ox.globalCompositeOperation='source-in';ox.fillStyle='#fff';ox.fillRect(0,0,cw,ch);ox.globalCompositeOperation='source-over';
+  const out=document.createElement('canvas');out.width=cw;out.height=ch;const x=out.getContext('2d');x.drawImage(off,0,0);x.drawImage(base,pad,pad);return out;}
+let _bgmod_loading=null;
+async function aiRemove(file,onP){
+  if(!_bgmod_loading)_bgmod_loading=import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.6.0/+esm').catch(e=>{_bgmod_loading=null;throw e;});
+  const mod=await _bgmod_loading;
+  const job=mod.removeBackground(file,{progress:(k,c,total)=>{onP&&onP(total?c/total:0);},output:{format:'image/png'}});
+  // never hang: hard timeout → caller falls back to simple cutout
+  const blob=await Promise.race([job,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),45000))]);
+  return await loadBitmap(blob);}
 
-/* =================== ORDER =================== */
+/* ===== sticker png (cutout + outline + label) ===== */
+async function buildStickerPNG(c){
+  const stk=IMG[c.id]&&IMG[c.id].stk;if(!stk)return null;const im=await loadBitmap(stk);
+  const W=im.width,labelH=Math.round(W*0.18);const cv=document.createElement('canvas');cv.width=W;cv.height=im.height+labelH;const x=cv.getContext('2d');
+  x.drawImage(im,0,0);x.textAlign='center';const cx=W/2,by=im.height+labelH*0.5;
+  x.font=`${Math.round(labelH*0.5)}px Anton, sans-serif`;x.lineJoin='round';x.lineWidth=Math.round(labelH*0.16);x.strokeStyle='#3f4a55';x.fillStyle='#fff';
+  x.strokeText(c.name.toUpperCase(),cx,by);x.fillText(c.name.toUpperCase(),cx,by);
+  if(c.L){x.font=`${Math.round(labelH*0.26)}px 'Space Mono', monospace`;const sz=c.L+' '+unit();x.lineWidth=Math.round(labelH*0.1);x.strokeText(sz,cx,by+labelH*0.36);x.fillText(sz,cx,by+labelH*0.36);}
+  return cv;}
+async function downloadSticker(c){toast(t('cutting').replace('…','')+'…');try{await(document.fonts?document.fonts.ready:Promise.resolve());const cv=await buildStickerPNG(c);if(!cv){toast('—');return;}const a=document.createElement('a');a.download=`sticker-${(c.name||'fish').replace(/\s+/g,'-').toLowerCase()}.png`;a.href=cv.toDataURL('image/png');a.click();burstConfetti();toast(t('dlReady'));}catch(e){console.error(e);toast('—');}}
+async function shareCatch(c){
+  const text=`${c.name}${c.L?' · '+c.L+' '+unit():''} — FISH COLLECTOR`;
+  try{await(document.fonts?document.fonts.ready:Promise.resolve());const cv=await buildStickerPNG(c);
+    if(cv&&navigator.canShare){const blob=await new Promise(r=>cv.toBlob(r,'image/png'));const file=new File([blob],'fish-sticker.png',{type:'image/png'});
+      if(navigator.canShare({files:[file]})){await navigator.share({files:[file],text,title:'FISH COLLECTOR'});return;}}
+    if(navigator.share){await navigator.share({text,title:'FISH COLLECTOR'});return;}
+  }catch(e){if(e&&e.name==='AbortError')return;}
+  downloadSticker(c);toast(t('shareFallback'));}
+
+/* ===== order ===== */
 let orderQty={};
-function openOrder(presetId){
-  if(!CATCHES.length){toast(t('oEmpty'));return;}
+function openOrder(presetId){if(!CATCHES.length){toast(t('oEmpty'));return;}
   orderQty={};CATCHES.forEach(c=>orderQty[c.id]=0);orderQty[(presetId&&orderQty[presetId]!=null)?presetId:CATCHES[0].id]=2;
-  $('orderContent').innerHTML=`
-    <div class="form order">
-      <h2 class="anton">${t('orderTitle')}</h2><div class="sub">${t('orderSub')} · ${STICKER_PRICE} ₽/шт</div>
-      <div id="orderList"></div>
-      <div class="summ"><span>${t('oTotal')} <span id="oCnt" class="mono"></span></span><b class="anton" id="oSum"></b></div>
-      <div class="field"><label>${t('oName')}</label><input id="oName" placeholder="${t('oNamePh')}"/></div>
-      <div class="field"><label>${t('oAddr')}</label><textarea id="oAddr" placeholder="${t('oAddrPh')}"></textarea></div>
-      <div class="field"><label>${t('oContact')}</label><input id="oContact" placeholder="${t('oContactPh')}"/></div>
-      <div class="btnrow"><button class="btn ghost" data-close>${t('cancel')}</button>
-        <button class="btn gold" id="oSend"><svg viewBox="0 0 24 24"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4Z"/></svg> ${t('oSend')}</button></div>
-      <div class="hint" style="margin-top:10px">${t('oNote')}</div>
-    </div>`;
-  const list=$('orderList');
-  CATCHES.forEach(c=>{const stk=(IMG[c.id]&&IMG[c.id].stk)||'';const row=el('div','row');
-    row.innerHTML=`<div class="sw">${stk?`<img src="${stk}"/>`:FISH_SIL}</div>
-      <div class="info"><b>${esc(c.name)}</b><small>${c.L?c.L+(LANG==='no'?'cm':'см')+' · ':''}${STICKER_PRICE} ₽</small></div>
-      <div class="qty"><button data-m="${c.id}">−</button><span id="q_${c.id}">${orderQty[c.id]}</span><button data-p="${c.id}">+</button></div>`;
-    list.appendChild(row);});
+  $('orderContent').innerHTML=`<div class="form order"><h2 class="anton">${t('orderTitle')}</h2><div class="sub">${t('orderSub')} · ${STICKER_PRICE} ₽/шт</div>
+    <div id="orderList"></div><div class="summ"><span>${t('oTotal')} <span id="oCnt" class="mono"></span></span><b class="anton" id="oSum"></b></div>
+    <div class="field"><label>${t('oName')}</label><input id="oName" placeholder="${t('oNamePh')}"/></div>
+    <div class="field"><label>${t('oAddr')}</label><textarea id="oAddr" placeholder="${t('oAddrPh')}"></textarea></div>
+    <div class="field"><label>${t('oContact')}</label><input id="oContact" placeholder="${t('oContactPh')}"/></div>
+    <div class="btnrow"><button class="btn ghost" data-close>${t('cancel')}</button><button class="btn gold" id="oSend"><svg viewBox="0 0 24 24"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4Z"/></svg> ${t('oSend')}</button></div>
+    <div class="hint" style="margin-top:10px">${t('oNote')}</div></div>`;
+  const list=$('orderList');CATCHES.forEach(c=>{const stk=(IMG[c.id]&&IMG[c.id].stk)||'';const row=el('div','row');
+    row.innerHTML=`<div class="sw">${stk?`<img src="${stk}"/>`:FISH.treska}</div><div class="info"><b>${esc(c.name)}</b><small>${c.L?c.L+unit()+' · ':''}${STICKER_PRICE} ₽</small></div><div class="qty"><button data-m="${c.id}">−</button><span id="q_${c.id}">${orderQty[c.id]}</span><button data-p="${c.id}">+</button></div>`;list.appendChild(row);});
   list.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{orderQty[b.dataset.p]++;updOrder();});
   list.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{orderQty[b.dataset.m]=Math.max(0,orderQty[b.dataset.m]-1);updOrder();});
   $('oSend').onclick=sendOrder;$('orderContent').querySelectorAll('[data-close]').forEach(b=>b.onclick=closeSheets);
-  openSheet('orderSheet');$('orderSheet').scrollTop=0;updOrder();
-}
-function updOrder(){let n=0;for(const k in orderQty){n+=orderQty[k];const s=$('q_'+k);if(s)s.textContent=orderQty[k];}
-  $('oCnt').textContent=n+' '+(LANG==='no'?'stk':'шт');$('oSum').textContent=(n*STICKER_PRICE)+' ₽';}
-function sendOrder(){
-  let n=0,lines=[];for(const k in orderQty){if(orderQty[k]>0){n+=orderQty[k];const c=CATCHES.find(x=>x.id===k);lines.push(`${c.name}${c.L?' '+c.L+'см':''} ×${orderQty[k]}`);}}
-  if(!n){toast(t('oEmpty'));return;}
-  const name=$('oName').value.trim(),addr=$('oAddr').value.trim(),contact=$('oContact').value.trim();
-  if(!name||!addr){toast(t('oNeed'));return;}
-  const subject=encodeURIComponent(`FISH COLLECTOR — заказ наклеек ${n} шт.`);
-  const body=encodeURIComponent(`Заказ наклеек FISH COLLECTOR\n\n${lines.map(l=>'• '+l).join('\n')}\n\nИтого: ${n} шт × ${STICKER_PRICE} ₽ = ${n*STICKER_PRICE} ₽\n\nИмя: ${name}\nАдрес: ${addr}\nКонтакт: ${contact}\n`);
-  window.location.href=`mailto:ex333m@gmail.com?subject=${subject}&body=${body}`;
-  closeSheets();burstConfetti();toast(t('ordered'));
-}
-const STICKER_PRICE=149;
+  openSheet('orderSheet');$('orderSheet').scrollTop=0;updOrder();}
+function updOrder(){let n=0;for(const k in orderQty){n+=orderQty[k];const s=$('q_'+k);if(s)s.textContent=orderQty[k];}$('oCnt').textContent=n+' '+(LANG==='no'?'stk':(LANG==='en'?'pcs':'шт'));$('oSum').textContent=(n*STICKER_PRICE)+' ₽';}
+function sendOrder(){let n=0,lines=[];for(const k in orderQty){if(orderQty[k]>0){n+=orderQty[k];const c=CATCHES.find(x=>x.id===k);lines.push(`${c.name}${c.L?' '+c.L+'см':''} ×${orderQty[k]}`);}}
+  if(!n){toast(t('oEmpty'));return;}const name=$('oName').value.trim(),addr=$('oAddr').value.trim(),contact=$('oContact').value.trim();if(!name||!addr){toast(t('oNeed'));return;}
+  const subject=encodeURIComponent(`FISH COLLECTOR — заказ наклеек ${n} шт.`);const body=encodeURIComponent(`Заказ наклеек FISH COLLECTOR\n\n${lines.map(l=>'• '+l).join('\n')}\n\nИтого: ${n} шт × ${STICKER_PRICE} ₽ = ${n*STICKER_PRICE} ₽\n\nИмя: ${name}\nАдрес: ${addr}\nКонтакт: ${contact}\n`);
+  window.location.href=`mailto:ex333m@gmail.com?subject=${subject}&body=${body}`;closeSheets();burstConfetti();toast(t('ordered'));}
 
-/* =================== FX =================== */
-function celebrate(c){
-  const stk=(IMG[c.id]&&IMG[c.id].stk)||'';
-  $('celeFish').innerHTML=stk?`<img src="${stk}"/>`:FISH_SIL;
-  $('celeTxt').textContent=isTrophy(c)&&c.L?t('rareCatch'):t('newSticker');
-  $('celeSub').textContent=`[ ${c.name.toUpperCase()}${c.L?' · '+c.L+(LANG==='no'?'CM':'СМ'):''} ]`;
+/* ===== celebrate (caught card) ===== */
+function celebrate(c,wasNew){
+  const r=rarityOf(c);const d=c.sid?dexById(c.sid):null;const stk=(IMG[c.id]&&IMG[c.id].stk)||'';
+  $('celeTag').textContent=isTrophy(c)&&RW[r]>=4?t('trophyNew'):(wasNew?t('caught'):t('caughtAgain'));
+  $('celeFish').innerHTML=stk?`<img src="${stk}" alt=""/>`:`<div style="color:#e7eef2">${FISH[(d&&d.sil)||'treska']}</div>`;
+  $('celeName').textContent=c.name;$('celeLat').textContent=d?d.lat:(c.L?c.L+' '+unit():'');
+  $('celeRar').innerHTML=`<span class="rar" style="--rc:${RCOL[r]}">${rarLabel(r)}</span>`+(c.L?`<span class="rar" style="--rc:var(--gold);color:var(--gold);border-color:var(--gold)">${c.L} ${unit()}</span>`:'');
   const ce=$('cele');ce.classList.add('show');
-  for(let i=0;i<3;i++){const r=el('div','ring');r.style.animationDelay=(i*0.18)+'s';ce.appendChild(r);setTimeout(()=>r.remove(),1500+i*180);}
+  for(let i=0;i<3;i++){const ring=el('div','ring');ring.style.animationDelay=(i*0.18)+'s';ce.appendChild(ring);setTimeout(()=>ring.remove(),1500+i*180);}
   burstConfetti();navigator.vibrate&&navigator.vibrate([20,40,30]);
-  setTimeout(()=>ce.classList.remove('show'),2300);
+  $('celeShareT').textContent=t('share');$('celeDoneT').textContent=t('done');
+  $('celeShare').onclick=()=>shareCatch(c);
+  $('celeDone').onclick=()=>{ce.classList.remove('show');};
 }
-function burstConfetti(){
-  const cv=$('confetti'),x=cv.getContext('2d');cv.width=innerWidth;cv.height=innerHeight;
-  const cols=['#f2f6f8','#cfd8df','#d8c9a8','#7fa8d8','#aab6c0','#b6aed4'];
+function burstConfetti(){const cv=$('confetti'),x=cv.getContext('2d');cv.width=innerWidth;cv.height=innerHeight;
+  const cols=['#f2f6f8','#cfd8df','#d8c9a8','#6aa0e0','#aab6c0','#5fd39a'];
   const P=Array.from({length:120},()=>({x:innerWidth/2,y:innerHeight*0.42,vx:(Math.random()-.5)*16,vy:Math.random()*-16-4,g:.4+Math.random()*.3,s:5+Math.random()*7,c:cols[Math.random()*cols.length|0],r:Math.random()*6,vr:(Math.random()-.5)*.4,a:1}));
-  let f=0;(function loop(){x.clearRect(0,0,cv.width,cv.height);f++;
-    P.forEach(p=>{p.vy+=p.g;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;p.a=Math.max(0,1-f/90);x.save();x.translate(p.x,p.y);x.rotate(p.r);x.globalAlpha=p.a;x.fillStyle=p.c;x.fillRect(-p.s/2,-p.s/2,p.s,p.s*1.4);x.restore();});
-    if(f<92)requestAnimationFrame(loop);else x.clearRect(0,0,cv.width,cv.height);})();
-}
-let toastT;function toast(m){const el2=$('toast');el2.textContent=m;el2.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el2.classList.remove('show'),2600);}
-function makeBubbles(){const b=$('bubbles');for(let i=0;i<8;i++){const d=el('div','bubble');const sz=6+Math.random()*18;d.style.width=d.style.height=sz+'px';d.style.left=Math.random()*100+'vw';d.style.setProperty('--dx',(Math.random()*40-20)+'px');d.style.animationDuration=(11+Math.random()*16)+'s';d.style.animationDelay=(-Math.random()*16)+'s';b.appendChild(d);}}
+  let f=0;(function loop(){x.clearRect(0,0,cv.width,cv.height);f++;P.forEach(p=>{p.vy+=p.g;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;p.a=Math.max(0,1-f/90);x.save();x.translate(p.x,p.y);x.rotate(p.r);x.globalAlpha=p.a;x.fillStyle=p.c;x.fillRect(-p.s/2,-p.s/2,p.s,p.s*1.4);x.restore();});if(f<92)requestAnimationFrame(loop);else x.clearRect(0,0,cv.width,cv.height);})();}
+let toastT;function toast(m){const e=$('toast');e.textContent=m;e.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('show'),2600);}
+function makeBubbles(){const b=$('bubbles');for(let i=0;i<8;i++){const dv=el('div','bubble');const sz=6+Math.random()*18;dv.style.width=dv.style.height=sz+'px';dv.style.left=Math.random()*100+'vw';dv.style.setProperty('--dx',(Math.random()*40-20)+'px');dv.style.animationDuration=(11+Math.random()*16)+'s';dv.style.animationDelay=(-Math.random()*16)+'s';b.appendChild(dv);}}
 
-/* =================== INIT =================== */
+/* ===== init ===== */
+function setView(v){VIEW=v;renderHeaderTools();renderGrid();window.scrollTo({top:0,behavior:'smooth'});}
 async function init(){
-  $('splashFish').innerHTML=`<img src="logo.png" alt="FISH COLLECTOR"/>`;$('verTxt').textContent=APP_VERSION;
+  $('splashFish').innerHTML=`<img src="logo.png" alt="FISH COLLECTOR"/>`;
   $('brandMk').innerHTML=`<img src="logo.png" alt=""/>`;
-  makeBubbles();
-  ensureNumbers();
-  await prefetchImages();
+  makeBubbles();ensureNumbers();await prefetchImages();
+  VIEW='collection';
   applyLang();
-  $('fab').onclick=()=>openForm();$('ctaAdd').onclick=()=>openForm();$('orderAllBtn').onclick=()=>openOrder();
+  $('navCam').onclick=()=>openForm();
+  document.querySelectorAll('#nav button[data-v]').forEach(b=>b.onclick=()=>setView(b.dataset.v));
   document.querySelectorAll('#langSel button').forEach(b=>b.onclick=()=>{LANG=b.dataset.l;localStorage.setItem('fishcollector_lang',LANG);applyLang();});
   $('scrim').onclick=closeSheets;document.querySelectorAll('[data-close]').forEach(b=>b.onclick=closeSheets);
-  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheets();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSheets();$('cele').classList.remove('show');}});
   setTimeout(()=>{$('splash').classList.add('gone');$('app').classList.add('in');},2000);
   if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 }
