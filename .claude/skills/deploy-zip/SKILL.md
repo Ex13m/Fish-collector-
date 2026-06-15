@@ -12,17 +12,17 @@ description: Собрать ZIP с файлами сайта FISH COLLECTOR дл
 2. Собрать архив в корне проекта:
    - PowerShell:
      ```powershell
-     Compress-Archive -Path index.html,manifest.json,sw.js,icon.svg,netlify.toml -DestinationPath fish-collector.zip -Force
+     Compress-Archive -Path index.html,manifest.json,sw.js,icon.svg,logo.png,netlify.toml -DestinationPath fish-collector.zip -Force
      ```
    - bash/zip:
      ```bash
-     zip -j fish-collector.zip index.html manifest.json sw.js icon.svg netlify.toml
+     zip -j fish-collector.zip index.html manifest.json sw.js icon.svg logo.png netlify.toml
      ```
 3. Сообщить пользователю путь к `fish-collector.zip` и напомнить:
    «Открой Netlify → Deploys → перетащи `fish-collector.zip`».
 
 ## Заметки
-- В архив кладём ТОЛЬКО: `index.html`, `manifest.json`, `sw.js`, `icon.svg`, `netlify.toml`.
+- В архив кладём ТОЛЬКО: `index.html`, `manifest.json`, `sw.js`, `icon.svg`, `logo.png`, `netlify.toml`.
 - Если добавились новые ассеты — внести их в команду и в `ASSETS` в `sw.js`.
 - `fish-collector.zip` в `.gitignore` — в репозиторий не коммитим.
 - Альтернатива: git-push в репозиторий, подключённый к Netlify (`netlify.toml` уже в корне).

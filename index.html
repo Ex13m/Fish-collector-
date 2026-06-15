@@ -56,7 +56,8 @@ img{max-width:100%;display:block}
 #splash.gone{opacity:0;visibility:hidden}
 .sp-wrap{text-align:center;padding:24px;width:100%;max-width:680px}
 .sp-tag{font-family:'Space Mono';font-size:10.5px;letter-spacing:.32em;color:var(--cap);margin-bottom:18px}
-.sp-fish{width:min(38vw,140px);margin:0 auto 8px;color:#eef3f6;filter:drop-shadow(0 12px 26px rgba(20,28,36,.5));animation:swimIn 1.5s var(--spring) both,bob 3.4s ease-in-out 1.5s infinite}
+.sp-fish{width:min(54vw,210px);margin:0 auto 8px;filter:drop-shadow(0 12px 26px rgba(20,28,36,.5));animation:swimIn 1.5s var(--spring) both,bob 3.4s ease-in-out 1.5s infinite}
+.sp-fish img{width:100%;height:auto}
 @keyframes swimIn{0%{transform:translateX(-70vw) scaleX(-1) rotate(-4deg);opacity:0}55%{opacity:1}100%{transform:translateX(0) rotate(0);opacity:1}}
 @keyframes bob{50%{transform:translateY(-7px) rotate(1deg)}}
 .sp-title{font-size:clamp(46px,15vw,140px);color:var(--ink);margin:0;animation:upFade 1s .35s var(--ease) both}
@@ -73,6 +74,7 @@ img{max-width:100%;display:block}
 .brand{display:flex;align-items:center;gap:11px;min-width:0}
 .brand .mk{width:38px;height:38px;flex:none;display:grid;place-items:center;color:#f2f6f8;background:var(--panel2);border:1px solid var(--line2);clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px))}
 .brand .mk svg{width:26px}
+.brand .mk img{width:30px;height:auto}
 .brand b{font-family:'Anton';font-size:20px;color:var(--ink);letter-spacing:.02em;line-height:1}
 .brand sup{font-family:'Space Mono';font-size:9px;color:var(--mut);top:-.8em}
 .top .sp{flex:1}
@@ -360,11 +362,13 @@ img{max-width:100%;display:block}
 
 <script>
 "use strict";
-const APP_VERSION='2.1.0';
+const APP_VERSION='2.1.1';
 const $=id=>document.getElementById(id);
 const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
 const FISH_SIL=`<svg viewBox="0 0 150 60" fill="currentColor"><path d="M10 30c22-16 80-18 112-8 8 3 12 3 20-2-3 7-3 13 0 20-8-5-12-5-20-2-32 10-90 8-112-8z"/><circle cx="22" cy="27" r="2.6" fill="#3f4a55"/><path d="M12 33c-2 2-2 3-3 5" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>`;
 const TROPHY_SVG=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4.5V8A3 3 0 0 0 7 11M17 6h2.5V8a3 3 0 0 1-2.5 3"/></svg>`;
+// фирменный знак — die-cut стикер-рыба с белой обводкой (для шапки/сплэша на тёмном фоне)
+const LOGO_SVG=`<svg viewBox="0 0 168 78" fill="none"><g transform="translate(9,12)"><path d="M10 30c22-16 80-18 112-8 8 3 12 3 20-2-3 7-3 13 0 20-8-5-12-5-20-2-32 10-90 8-112-8z" fill="#ffffff" stroke="#ffffff" stroke-width="9" stroke-linejoin="round"/><path d="M10 30c22-16 80-18 112-8 8 3 12 3 20-2-3 7-3 13 0 20-8-5-12-5-20-2-32 10-90 8-112-8z" fill="#e7eef2"/><path d="M20 30c26-4 76-4 100 1" stroke="#aeb9c2" stroke-width="1.4" opacity=".6"/><circle cx="22" cy="27" r="2.8" fill="#39434d"/></g></svg>`;
 
 /* =================== I18N =================== */
 const I18N={
@@ -820,8 +824,8 @@ function makeBubbles(){const b=$('bubbles');for(let i=0;i<8;i++){const d=el('div
 
 /* =================== INIT =================== */
 async function init(){
-  $('splashFish').innerHTML=FISH_SIL;$('verTxt').textContent=APP_VERSION;
-  $('brandMk').innerHTML=`<svg viewBox="0 0 40 40" style="color:#f2f6f8"><g transform="translate(2,12) scale(.24)">${FISH_SIL.replace('<svg viewBox="0 0 150 60" fill="currentColor">','').replace('</svg>','')}</g></svg>`;
+  $('splashFish').innerHTML=`<img src="logo.png" alt="FISH COLLECTOR"/>`;$('verTxt').textContent=APP_VERSION;
+  $('brandMk').innerHTML=`<img src="logo.png" alt=""/>`;
   makeBubbles();
   ensureNumbers();
   await prefetchImages();
