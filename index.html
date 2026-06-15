@@ -244,6 +244,12 @@ img{max-width:100%;display:block}
 .crop{position:absolute;border:2px solid #fff;box-shadow:0 0 0 9999px rgba(20,28,36,.55);cursor:move;touch-action:none;box-sizing:border-box}
 .crop::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.35) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.35) 1px,transparent 1px);background-size:33.33% 33.33%}
 .crop .br{position:absolute;right:-12px;bottom:-12px;width:26px;height:26px;background:#fff;border:2px solid var(--b3);border-radius:50%;cursor:nwse-resize;touch-action:none}
+.editbar{display:flex;gap:8px;align-items:center;padding:8px 4px}
+.editbar button{font-family:'Space Mono';font-size:11px;padding:8px 12px;border:1px solid var(--line2);color:var(--ink);background:var(--panel);white-space:nowrap}
+.editbar button.on{background:var(--ink);color:var(--b3)}
+.editbar input[type=range]{flex:1;min-width:60px;accent-color:#fff}
+.editwrap{position:relative;display:grid;place-items:center;min-height:210px;padding:8px}
+.editwrap canvas{position:relative;z-index:2;max-width:100%;max-height:280px;touch-action:none;cursor:crosshair}
 .studio .checker{position:absolute;inset:0;background-image:linear-gradient(45deg,rgba(255,255,255,.06) 25%,transparent 25%,transparent 75%,rgba(255,255,255,.06) 75%),linear-gradient(45deg,rgba(255,255,255,.06) 25%,transparent 25%,transparent 75%,rgba(255,255,255,.06) 75%);background-size:22px 22px;background-position:0 0,11px 11px;opacity:.5}
 .studio .prev{position:relative;z-index:2;max-height:260px;width:auto;object-fit:contain;padding:12px;filter:drop-shadow(0 12px 18px rgba(20,28,36,.5))}
 .studio .ov{position:absolute;inset:0;z-index:3;background:rgba(20,28,36,.55);display:grid;place-content:center;text-align:center;gap:12px}
@@ -340,7 +346,7 @@ img{max-width:100%;display:block}
 
 <script>
 "use strict";
-const APP_VERSION='3.1.0';
+const APP_VERSION='3.2.0';
 const $=id=>document.getElementById(id);
 const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
 const TROPHY_SVG=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4.5V8A3 3 0 0 0 7 11M17 6h2.5V8a3 3 0 0 1-2.5 3"/></svg>`;
@@ -419,7 +425,7 @@ const I18N={
    share:'Поделиться',done:'Готово',shareFallback:'Стикер скачан — прикрепи его',
    formTitle:'Новый улов',formSub:'[ фото → вырезка фона → стикер ]',
    fPhoto:'Фото рыбы',photoPick:'ДОБАВЬ ФОТО РЫБЫ',camera:'Камера',gallery:'Галерея',firstLoadHint:'первый запуск модели может занять время',cutting:'Вырезаю фон…',loadingModel:'Загружаю ИИ-модель…',
-   cutDone:'СТИКЕР ГОТОВ',cutSimple:'Простая вырезка',cutAi:'ИИ-вырезка',keepOrig:'Без вырезки',retake:'Заменить фото',cutFish:'Вырезать рыбу',cutFull:'Весь кадр',cropHint:'Наведи рамку на рыбу и нажми «Вырезать рыбу»',
+   cutDone:'СТИКЕР ГОТОВ',cutSimple:'Простая вырезка',cutAi:'ИИ-вырезка',keepOrig:'Без вырезки',retake:'Заменить фото',cutFish:'Вырезать рыбу',cutFull:'Весь кадр',cropHint:'Наведи рамку на рыбу и нажми «Вырезать рыбу»',eraseExtra:'Стереть лишнее',erase:'Стереть',restore:'Вернуть',reset:'Сброс',
    fName:'Вид рыбы',fNamePh:'выбери из списка или впиши свой',fSize:'Размер, см',fQty:'Количество',fDate:'Дата и время',
    fPlace:'Место',fPlacePh:'точка или координаты',fMethod:'Способ / снасть',fMethodPh:'спиннинг, джиг…',fNote:'Заметка',fNotePh:'история поимки…',
    cancel:'Отмена',save:'В коллекцию',needName:'Укажи вид рыбы',needPhoto:'Добавь фото',
@@ -442,7 +448,7 @@ const I18N={
    share:'Share',done:'Done',shareFallback:'Sticker downloaded — attach it',
    formTitle:'New catch',formSub:'[ photo → cut out → sticker ]',
    fPhoto:'Fish photo',photoPick:'ADD A FISH PHOTO',camera:'Camera',gallery:'Gallery',firstLoadHint:'first model run may take a moment',cutting:'Removing background…',loadingModel:'Loading AI model…',
-   cutDone:'STICKER READY',cutSimple:'Simple cutout',cutAi:'AI cutout',keepOrig:'Keep original',retake:'Replace photo',cutFish:'Cut the fish',cutFull:'Whole frame',cropHint:'Frame the fish and tap “Cut the fish”',
+   cutDone:'STICKER READY',cutSimple:'Simple cutout',cutAi:'AI cutout',keepOrig:'Keep original',retake:'Replace photo',cutFish:'Cut the fish',cutFull:'Whole frame',cropHint:'Frame the fish and tap “Cut the fish”',eraseExtra:'Erase extra',erase:'Erase',restore:'Restore',reset:'Reset',
    fName:'Species',fNamePh:'pick from list or type your own',fSize:'Size, cm',fQty:'Quantity',fDate:'Date & time',
    fPlace:'Place',fPlacePh:'spot or coordinates',fMethod:'Method / tackle',fMethodPh:'spinning, jig…',fNote:'Note',fNotePh:'the story…',
    cancel:'Cancel',save:'Collect',needName:'Enter the species',needPhoto:'Add a photo',
@@ -465,7 +471,7 @@ const I18N={
    share:'Del',done:'Ferdig',shareFallback:'Klistremerke lastet ned — legg det ved',
    formTitle:'Ny fangst',formSub:'[ bilde → utklipp → klistremerke ]',
    fPhoto:'Fiskebilde',photoPick:'LEGG TIL FISKEBILDE',camera:'Kamera',gallery:'Galleri',firstLoadHint:'første modellkjøring kan ta litt tid',cutting:'Fjerner bakgrunn…',loadingModel:'Laster AI-modell…',
-   cutDone:'KLISTREMERKE KLART',cutSimple:'Enkelt utklipp',cutAi:'AI-utklipp',keepOrig:'Behold original',retake:'Bytt bilde',cutFish:'Klipp ut fisken',cutFull:'Hele bildet',cropHint:'Ramme inn fisken og trykk «Klipp ut fisken»',
+   cutDone:'KLISTREMERKE KLART',cutSimple:'Enkelt utklipp',cutAi:'AI-utklipp',keepOrig:'Behold original',retake:'Bytt bilde',cutFish:'Klipp ut fisken',cutFull:'Hele bildet',cropHint:'Ramme inn fisken og trykk «Klipp ut fisken»',eraseExtra:'Visk bort',erase:'Visk',restore:'Angre',reset:'Nullstill',
    fName:'Art',fNamePh:'velg fra listen eller skriv egen',fSize:'Størrelse, cm',fQty:'Antall',fDate:'Dato & tid',
    fPlace:'Sted',fPlacePh:'sted eller koordinater',fMethod:'Metode / redskap',fMethodPh:'spinning, jigg…',fNote:'Notat',fNotePh:'historien…',
    cancel:'Avbryt',save:'Samle',needName:'Skriv arten',needPhoto:'Legg til bilde',
@@ -686,9 +692,9 @@ function bindTilt(node){if(!node)return;const wrap=node.parentElement;
   if(window.DeviceOrientationEvent)window.addEventListener('deviceorientation',e=>{if(e.gamma==null)return;const px=Math.max(-1,Math.min(1,e.gamma/30)),py=Math.max(-1,Math.min(1,(e.beta-45)/30));node.style.transform=`rotateY(${px*14}deg) rotateX(${-py*14}deg)`;});}
 
 /* ===== add form + cutout ===== */
-let F={orig:null,stk:null,bmp:null,file:null};
+let F={orig:null,stk:null,bmp:null,file:null,cut:null};
 function openForm(presetName){
-  F={orig:null,stk:null,bmp:null,file:null};
+  F={orig:null,stk:null,bmp:null,file:null,cut:null};
   const now=new Date();now.setMinutes(now.getMinutes()-now.getTimezoneOffset());
   const names=[...new Set([...DEX.map(dexName),...CATCHES.map(c=>c.name)])];
   const datal=names.map(n=>`<option value="${esc(n)}">`).join('');
@@ -723,11 +729,32 @@ function bindStudioEmpty(){const s=$('studio');s.className='studio empty-st';s.i
   $('pCam').onclick=ev=>{ev.stopPropagation();$('fCam').click();};$('pGal').onclick=ev=>{ev.stopPropagation();$('fGal').click();};}
 function showStudio(src,badge){const s=$('studio');s.classList.remove('empty-st');s.innerHTML=`<div class="checker"></div><img class="prev" src="${src}"/>${badge?`<div class="badge mono">${badge}</div>`:''}`;$('studioActs').style.display='flex';}
 function setActs(html){const a=$('studioActs');if(!a)return;a.style.display='flex';a.innerHTML=html;}
+function toCanvas(src,max){max=max||900;let w=src.width,h=src.height;const s=Math.min(1,max/Math.max(w,h));w=Math.round(w*s);h=Math.round(h*s);const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(src,0,0,w,h);return c;}
+function cloneCanvas(src){const c=document.createElement('canvas');c.width=src.width;c.height=src.height;c.getContext('2d').drawImage(src,0,0);return c;}
 function showStudioResult(src,badge){showStudio(src,badge);
-  setActs(`<button id="aRetake">${t('retake')}</button><button id="aAi">${t('cutAi')}</button><button id="aKeep">${t('keepOrig')}</button>`);
+  setActs(`<button id="aRetake">${t('retake')}</button><button id="aErase">${t('eraseExtra')}</button><button id="aAi">${t('cutAi')}</button><button id="aKeep">${t('keepOrig')}</button>`);
   $('aRetake').onclick=bindStudioEmpty;
+  $('aErase').onclick=()=>{if(F.cut)editStep();};
   $('aAi').onclick=()=>{if(F.file||F.bmp)processSticker(F.file||F.bmp,'ai');};
-  $('aKeep').onclick=()=>{if(F.bmp){F.stk=bmpToDataURL(F.bmp,760,'image/png');showStudioResult(F.stk,'ORIGINAL');}};}
+  $('aKeep').onclick=()=>{if(F.bmp){F.cut=toCanvas(F.bmp);F.stk=F.cut.toDataURL('image/png');showStudioResult(F.stk,'ORIGINAL');}};}
+// eraser: wipe leftover hands/person, restore to bring back
+function editStep(){
+  const s=$('studio');s.classList.remove('empty-st');
+  const work=cloneCanvas(F.cut),base=cloneCanvas(F.cut);
+  s.innerHTML=`<div style="width:100%"><div class="editbar"><button id="mErase" class="on">${t('erase')}</button><button id="mRestore">${t('restore')}</button><input id="brush" type="range" min="8" max="64" value="28"/></div><div class="editwrap" id="editwrap"><div class="checker"></div></div></div>`;
+  $('editwrap').appendChild(work);
+  setActs(`<button id="eReset">${t('reset')}</button><button id="eDone">${t('done')}</button>`);
+  let mode='erase',drawing=false;const ctx=work.getContext('2d');
+  $('mErase').onclick=()=>{mode='erase';$('mErase').classList.add('on');$('mRestore').classList.remove('on');};
+  $('mRestore').onclick=()=>{mode='restore';$('mRestore').classList.add('on');$('mErase').classList.remove('on');};
+  const paint=e=>{const r=work.getBoundingClientRect(),k=work.width/r.width;const x=(e.clientX-r.left)*k,y=(e.clientY-r.top)*k,rad=(+$('brush').value)*k;
+    ctx.save();if(mode==='erase'){ctx.globalCompositeOperation='destination-out';ctx.beginPath();ctx.arc(x,y,rad,0,7);ctx.fill();}else{ctx.beginPath();ctx.arc(x,y,rad,0,7);ctx.clip();ctx.drawImage(base,0,0);}ctx.restore();};
+  work.addEventListener('pointerdown',e=>{drawing=true;try{work.setPointerCapture(e.pointerId);}catch(_){}paint(e);e.preventDefault();});
+  work.addEventListener('pointermove',e=>{if(drawing)paint(e);});
+  work.addEventListener('pointerup',()=>{drawing=false;});work.addEventListener('pointercancel',()=>{drawing=false;});
+  $('eReset').onclick=()=>{ctx.clearRect(0,0,work.width,work.height);ctx.drawImage(base,0,0);};
+  $('eDone').onclick=()=>{F.cut=work;F.stk=makeSticker(work).toDataURL('image/png');showStudioResult(F.stk,t('cutDone'));};
+}
 // crop step — frame the fish, then cut inside the frame
 function showCrop(){const s=$('studio');s.classList.remove('empty-st');
   s.innerHTML=`<div style="width:100%"><div class="crophint">${t('cropHint')}</div><div class="croparea" id="croparea"><img id="cropImg" src="${F.orig}" alt=""/><div class="crop" id="cropBox"><span class="br"></span></div></div></div>`;
@@ -752,8 +779,8 @@ function cropRectPx(){const img=$('cropImg'),box=$('cropBox');if(!img||!box)retu
 async function cropAndCut(full){showStudioLoading(t('cutting'),0.5);await new Promise(r=>setTimeout(r,24));
   let src=F.bmp;
   if(!full){const r=cropRectPx();if(r&&r.sw>=8&&r.sh>=8){const cv=document.createElement('canvas');cv.width=Math.round(r.sw);cv.height=Math.round(r.sh);cv.getContext('2d').drawImage(F.bmp,r.sx,r.sy,r.sw,r.sh,0,0,cv.width,cv.height);src=cv;}}
-  try{const cut=smartCut(src,{tol:54});F.stk=makeSticker(cut).toDataURL('image/png');showStudioResult(F.stk,t('cutDone'));}
-  catch(e){console.error(e);F.stk=bmpToDataURL(F.bmp,760,'image/png');showStudioResult(F.stk,'ORIGINAL');}}
+  try{const cut=smartCut(src,{tol:54});F.cut=cut;F.stk=makeSticker(cut).toDataURL('image/png');showStudioResult(F.stk,t('cutDone'));}
+  catch(e){console.error(e);F.cut=toCanvas(F.bmp);F.stk=F.cut.toDataURL('image/png');showStudioResult(F.stk,'ORIGINAL');}}
 function showStudioLoading(label,pct){const s=$('studio');s.classList.remove('empty-st');
   s.innerHTML=`<div class="checker"></div>${F.orig?`<img class="prev" src="${F.orig}" style="opacity:.4"/>`:''}<div class="ov"><div class="t">${label}</div><div class="pb"><i id="pbI" style="width:${Math.round((pct||0)*100)}%"></i></div><button id="ovSimple" style="margin-top:4px;font-family:'Space Mono';font-size:11px;color:var(--ink);border:1px solid var(--line2);padding:8px 14px;background:var(--panel2)">${t('cutSimple')}</button><div style="font-family:'Space Mono';font-size:9px;color:var(--mut);margin-top:2px;max-width:200px">${t('firstLoadHint')}</div></div>`;
   $('studioActs').style.display='none';const b=$('ovSimple');if(b)b.onclick=()=>{if(F.bmp)processSticker(F.bmp,'simple');};}
@@ -766,9 +793,9 @@ async function processSticker(input,mode,bmp){
   try{
     if(mode==='ai'){showStudioLoading(t('loadingModel'),0.05);
       const cut=await aiRemove(input,p=>{const i=$('pbI');if(i)i.style.width=Math.round((0.05+p*0.9)*100)+'%';const lab=document.querySelector('#studio .ov .t');if(lab)lab.textContent=t('cutting')+' '+Math.round(p*100)+'%';});
-      F.stk=makeSticker(cut).toDataURL('image/png');showStudioResult(F.stk,'AI · '+t('cutDone'));
-    }else{showStudioLoading(t('cutting'),0.5);await new Promise(r=>setTimeout(r,16));const cut=smartCut(bmp||F.bmp,{tol:54});F.stk=makeSticker(cut).toDataURL('image/png');showStudioResult(F.stk,t('cutDone'));}
-  }catch(err){console.error(err);if(mode==='ai'){toast(t('aiUnavailable'));return processSticker(F.bmp,'simple');}F.stk=bmpToDataURL(F.bmp,760,'image/png');showStudioResult(F.stk,'ORIGINAL');}
+      F.cut=toCanvas(cut);F.stk=makeSticker(F.cut).toDataURL('image/png');showStudioResult(F.stk,'AI · '+t('cutDone'));
+    }else{showStudioLoading(t('cutting'),0.5);await new Promise(r=>setTimeout(r,16));const cut=smartCut(bmp||F.bmp,{tol:54});F.cut=cut;F.stk=makeSticker(cut).toDataURL('image/png');showStudioResult(F.stk,t('cutDone'));}
+  }catch(err){console.error(err);if(mode==='ai'){toast(t('aiUnavailable'));return processSticker(F.bmp,'simple');}F.cut=toCanvas(F.bmp);F.stk=F.cut.toDataURL('image/png');showStudioResult(F.stk,'ORIGINAL');}
 }
 function getGeo(){const hint=$('fGeoHint');if(!navigator.geolocation){hint.textContent=t('gpsNo');return;}hint.textContent=t('gpsWait');
   navigator.geolocation.getCurrentPosition(p=>{$('fPlace').value=`${p.coords.latitude.toFixed(4)}, ${p.coords.longitude.toFixed(4)}`;hint.textContent=t('gpsOk');},()=>{hint.textContent=t('gpsFail');},{enableHighAccuracy:true,timeout:8000});}
