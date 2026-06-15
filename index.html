@@ -334,7 +334,7 @@ img{max-width:100%;display:block}
 
 <script>
 "use strict";
-const APP_VERSION='3.0.1';
+const APP_VERSION='3.0.2';
 const $=id=>document.getElementById(id);
 const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
 const TROPHY_SVG=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4.5V8A3 3 0 0 0 7 11M17 6h2.5V8a3 3 0 0 1-2.5 3"/></svg>`;
@@ -413,7 +413,7 @@ const I18N={
    share:'Поделиться',done:'Готово',shareFallback:'Стикер скачан — прикрепи его',
    formTitle:'Новый улов',formSub:'[ фото → вырезка фона → стикер ]',
    fPhoto:'Фото рыбы',photoPick:'ДОБАВЬ ФОТО РЫБЫ',camera:'Камера',gallery:'Галерея',firstLoadHint:'первый запуск модели может занять время',cutting:'Вырезаю фон…',loadingModel:'Загружаю ИИ-модель…',
-   cutDone:'СТИКЕР ГОТОВ',cutSimple:'Простая вырезка',keepOrig:'Без вырезки',retake:'Заменить фото',
+   cutDone:'СТИКЕР ГОТОВ',cutSimple:'Простая вырезка',cutAi:'ИИ-вырезка',keepOrig:'Без вырезки',retake:'Заменить фото',
    fName:'Вид рыбы',fNamePh:'выбери из списка или впиши свой',fSize:'Размер, см',fQty:'Количество',fDate:'Дата и время',
    fPlace:'Место',fPlacePh:'точка или координаты',fMethod:'Способ / снасть',fMethodPh:'спиннинг, джиг…',fNote:'Заметка',fNotePh:'история поимки…',
    cancel:'Отмена',save:'В коллекцию',needName:'Укажи вид рыбы',needPhoto:'Добавь фото',
@@ -436,7 +436,7 @@ const I18N={
    share:'Share',done:'Done',shareFallback:'Sticker downloaded — attach it',
    formTitle:'New catch',formSub:'[ photo → cut out → sticker ]',
    fPhoto:'Fish photo',photoPick:'ADD A FISH PHOTO',camera:'Camera',gallery:'Gallery',firstLoadHint:'first model run may take a moment',cutting:'Removing background…',loadingModel:'Loading AI model…',
-   cutDone:'STICKER READY',cutSimple:'Simple cutout',keepOrig:'Keep original',retake:'Replace photo',
+   cutDone:'STICKER READY',cutSimple:'Simple cutout',cutAi:'AI cutout',keepOrig:'Keep original',retake:'Replace photo',
    fName:'Species',fNamePh:'pick from list or type your own',fSize:'Size, cm',fQty:'Quantity',fDate:'Date & time',
    fPlace:'Place',fPlacePh:'spot or coordinates',fMethod:'Method / tackle',fMethodPh:'spinning, jig…',fNote:'Note',fNotePh:'the story…',
    cancel:'Cancel',save:'Collect',needName:'Enter the species',needPhoto:'Add a photo',
@@ -459,7 +459,7 @@ const I18N={
    share:'Del',done:'Ferdig',shareFallback:'Klistremerke lastet ned — legg det ved',
    formTitle:'Ny fangst',formSub:'[ bilde → utklipp → klistremerke ]',
    fPhoto:'Fiskebilde',photoPick:'LEGG TIL FISKEBILDE',camera:'Kamera',gallery:'Galleri',firstLoadHint:'første modellkjøring kan ta litt tid',cutting:'Fjerner bakgrunn…',loadingModel:'Laster AI-modell…',
-   cutDone:'KLISTREMERKE KLART',cutSimple:'Enkelt utklipp',keepOrig:'Behold original',retake:'Bytt bilde',
+   cutDone:'KLISTREMERKE KLART',cutSimple:'Enkelt utklipp',cutAi:'AI-utklipp',keepOrig:'Behold original',retake:'Bytt bilde',
    fName:'Art',fNamePh:'velg fra listen eller skriv egen',fSize:'Størrelse, cm',fQty:'Antall',fDate:'Dato & tid',
    fPlace:'Sted',fPlacePh:'sted eller koordinater',fMethod:'Metode / redskap',fMethodPh:'spinning, jigg…',fNote:'Notat',fNotePh:'historien…',
    cancel:'Avbryt',save:'Samle',needName:'Skriv arten',needPhoto:'Legg til bilde',
@@ -680,9 +680,9 @@ function bindTilt(node){if(!node)return;const wrap=node.parentElement;
   if(window.DeviceOrientationEvent)window.addEventListener('deviceorientation',e=>{if(e.gamma==null)return;const px=Math.max(-1,Math.min(1,e.gamma/30)),py=Math.max(-1,Math.min(1,(e.beta-45)/30));node.style.transform=`rotateY(${px*14}deg) rotateX(${-py*14}deg)`;});}
 
 /* ===== add form + cutout ===== */
-let F={orig:null,stk:null,bmp:null};
+let F={orig:null,stk:null,bmp:null,file:null};
 function openForm(presetName){
-  F={orig:null,stk:null,bmp:null};
+  F={orig:null,stk:null,bmp:null,file:null};
   const now=new Date();now.setMinutes(now.getMinutes()-now.getTimezoneOffset());
   const names=[...new Set([...DEX.map(dexName),...CATCHES.map(c=>c.name)])];
   const datal=names.map(n=>`<option value="${esc(n)}">`).join('');
@@ -693,7 +693,7 @@ function openForm(presetName){
         <div class="studio empty-st" id="studio"></div>
         <input id="fCam" type="file" accept="image/*" capture="environment" hidden/>
         <input id="fGal" type="file" accept="image/*" hidden/>
-        <div class="studio-acts" id="studioActs" style="display:none"><button id="aRetake">${t('retake')}</button><button id="aSimple">${t('cutSimple')}</button><button id="aKeep">${t('keepOrig')}</button></div></div>
+        <div class="studio-acts" id="studioActs" style="display:none"><button id="aRetake">${t('retake')}</button><button id="aAi">${t('cutAi')}</button><button id="aKeep">${t('keepOrig')}</button></div></div>
       <div class="field"><label>${t('fName')}</label><input id="fName" list="namelist" value="${presetName?esc(presetName):''}" placeholder="${t('fNamePh')}"/><datalist id="namelist">${datal}</datalist></div>
       <div class="two"><div class="field"><label>${t('fSize')}</label><input id="fL" type="number" inputmode="decimal" min="0" placeholder="—"/></div>
         <div class="field"><label>${t('fQty')}</label><input id="fQ" type="number" min="1" value="1"/></div></div>
@@ -707,7 +707,7 @@ function openForm(presetName){
   bindStudioEmpty();
   $('fCam').onchange=onPhotoPick;$('fGal').onchange=onPhotoPick;$('fGeo').onclick=getGeo;$('fSave').onclick=saveCatch;
   $('aRetake').onclick=bindStudioEmpty;
-  $('aSimple').onclick=()=>{if(F.bmp)processSticker(F.bmp,'simple');};
+  $('aAi').onclick=()=>{if(F.file||F.bmp)processSticker(F.file||F.bmp,'ai');};
   $('aKeep').onclick=()=>{if(F.bmp){F.stk=bmpToDataURL(F.bmp,760,'image/png');showStudio(F.stk,'ORIGINAL');}};
   $('formContent').querySelectorAll('[data-close]').forEach(b=>b.onclick=closeSheets);
 }
@@ -722,17 +722,17 @@ function showStudio(src,badge){const s=$('studio');s.classList.remove('empty-st'
 function showStudioLoading(label,pct){const s=$('studio');s.classList.remove('empty-st');
   s.innerHTML=`<div class="checker"></div>${F.orig?`<img class="prev" src="${F.orig}" style="opacity:.4"/>`:''}<div class="ov"><div class="t">${label}</div><div class="pb"><i id="pbI" style="width:${Math.round((pct||0)*100)}%"></i></div><button id="ovSimple" style="margin-top:4px;font-family:'Space Mono';font-size:11px;color:var(--ink);border:1px solid var(--line2);padding:8px 14px;background:var(--panel2)">${t('cutSimple')}</button><div style="font-family:'Space Mono';font-size:9px;color:var(--mut);margin-top:2px;max-width:200px">${t('firstLoadHint')}</div></div>`;
   $('studioActs').style.display='none';const b=$('ovSimple');if(b)b.onclick=()=>{if(F.bmp)processSticker(F.bmp,'simple');};}
-async function onPhotoPick(e){const file=e.target.files[0];if(!file)return;showStudioLoading(t('cutting'),0);
+async function onPhotoPick(e){const file=e.target.files[0];if(!file)return;F.file=file;showStudioLoading(t('cutting'),0.5);
   exifGPS(file).then(g=>{const pl=$('fPlace');if(g&&pl&&!pl.value.trim()){pl.value=g.lat.toFixed(4)+', '+g.lon.toFixed(4);const h=$('fGeoHint');if(h)h.textContent=t('gpsPhoto');}});
-  try{F.bmp=await loadBitmap(file);F.orig=bmpToDataURL(F.bmp,1000,'image/jpeg',.85);await processSticker(file,'ai',F.bmp);}
-  catch(err){console.error(err);try{F.bmp=F.bmp||await loadBitmap(file);await processSticker(F.bmp,'simple');}catch(e2){toast('—');}}
+  try{F.bmp=await loadBitmap(file);F.orig=bmpToDataURL(F.bmp,1000,'image/jpeg',.85);await processSticker(F.bmp,'simple');}
+  catch(err){console.error(err);try{F.bmp=F.bmp||await loadBitmap(file);F.stk=bmpToDataURL(F.bmp,760,'image/png');showStudio(F.stk,'ORIGINAL');}catch(e2){toast('—');}}
   e.target.value='';}
 async function processSticker(input,mode,bmp){
   try{
     if(mode==='ai'){showStudioLoading(t('loadingModel'),0.05);
       const cut=await aiRemove(input,p=>{const i=$('pbI');if(i)i.style.width=Math.round((0.05+p*0.9)*100)+'%';const lab=document.querySelector('#studio .ov .t');if(lab)lab.textContent=t('cutting')+' '+Math.round(p*100)+'%';});
       F.stk=makeSticker(cut).toDataURL('image/png');showStudio(F.stk,'AI · '+t('cutDone'));
-    }else{showStudioLoading(t('cutting'),0.4);const cut=floodRemove(bmp||F.bmp,62);F.stk=makeSticker(cut).toDataURL('image/png');showStudio(F.stk,t('cutDone'));}
+    }else{showStudioLoading(t('cutting'),0.5);await new Promise(r=>setTimeout(r,16));const cut=smartCut(bmp||F.bmp,{tol:54});F.stk=makeSticker(cut).toDataURL('image/png');showStudio(F.stk,t('cutDone'));}
   }catch(err){console.error(err);if(mode==='ai'){toast(t('aiUnavailable'));return processSticker(F.bmp,'simple');}F.stk=bmpToDataURL(F.bmp,760,'image/png');showStudio(F.stk,'ORIGINAL');}
 }
 function getGeo(){const hint=$('fGeoHint');if(!navigator.geolocation){hint.textContent=t('gpsNo');return;}hint.textContent=t('gpsWait');
@@ -783,12 +783,36 @@ async function exifGPS(file){
   }catch(e){}
   return null;
 }
-function floodRemove(bmp,tol){let w=bmp.width,h=bmp.height;const s=Math.min(1,1000/Math.max(w,h));w=Math.round(w*s);h=Math.round(h*s);
-  const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.drawImage(bmp,0,0,w,h);
-  const id=x.getImageData(0,0,w,h),d=id.data,seen=new Uint8Array(w*h),st=[];const corners=[[0,0],[w-1,0],[0,h-1],[w-1,h-1]];let br=0,bg=0,bb=0;
-  corners.forEach(([cx,cy])=>{const i=(cy*w+cx)*4;br+=d[i];bg+=d[i+1];bb+=d[i+2];});br/=4;bg/=4;bb/=4;corners.forEach(([cx,cy])=>st.push(cy*w+cx));const T=(tol||62)**2;
-  while(st.length){const p=st.pop();if(seen[p])continue;seen[p]=1;const i=p*4;const dr=d[i]-br,dg=d[i+1]-bg,db=d[i+2]-bb;if(dr*dr+dg*dg+db*db>T)continue;d[i+3]=0;const px=p%w,py=(p/w)|0;if(px>0)st.push(p-1);if(px<w-1)st.push(p+1);if(py>0)st.push(p-w);if(py<h-1)st.push(p+w);}
-  x.putImageData(id,0,0);return c;}
+// smartCut — собственная вырезка фона без ИИ:
+// 1) палитра фона по рамке кадра (k-means, до 4 цветов: небо/вода/берег/лодка)
+// 2) заливка от всех краёв убирает связанный с краями фон похожего цвета
+// 3) чистка мелких пятен + лёгкое сглаживание края
+function smartCut(bmp,opt){
+  opt=opt||{};let w=bmp.width,h=bmp.height;const s=Math.min(1,(opt.max||900)/Math.max(w,h));w=Math.round(w*s);h=Math.round(h*s);
+  const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(bmp,0,0,w,h);
+  const img=x.getImageData(0,0,w,h),d=img.data,N=w*h;
+  const band=Math.max(2,Math.round(Math.min(w,h)*0.045));const samp=[];
+  for(let y=0;y<h;y++)for(let xx=0;xx<w;xx++){if(xx<band||xx>=w-band||y<band||y>=h-band){const i=(y*w+xx)*4;samp.push(d[i],d[i+1],d[i+2]);}}
+  const K=4,M=samp.length/3;let cen=[];for(let k=0;k<K;k++){const j=((Math.random()*M)|0)*3;cen.push([samp[j],samp[j+1],samp[j+2]]);}
+  for(let it=0;it<5;it++){const sm=Array.from({length:K},()=>[0,0,0,0]);
+    for(let j=0;j<samp.length;j+=3){let bi=0,bd=1e12;for(let k=0;k<K;k++){const dr=samp[j]-cen[k][0],dg=samp[j+1]-cen[k][1],db=samp[j+2]-cen[k][2];const dd=dr*dr+dg*dg+db*db;if(dd<bd){bd=dd;bi=k;}}const a=sm[bi];a[0]+=samp[j];a[1]+=samp[j+1];a[2]+=samp[j+2];a[3]++;}
+    for(let k=0;k<K;k++)if(sm[k][3])cen[k]=[sm[k][0]/sm[k][3],sm[k][1]/sm[k][3],sm[k][2]/sm[k][3]];}
+  const tol=(opt.tol||54)**2;
+  const isBg=p=>{const i=p*4,r=d[i],g=d[i+1],b=d[i+2];for(let k=0;k<K;k++){const dr=r-cen[k][0],dg=g-cen[k][1],db=b-cen[k][2];if(dr*dr+dg*dg+db*db<tol)return true;}return false;};
+  const bg=new Uint8Array(N),st=[];
+  for(let xx=0;xx<w;xx++){st.push(xx,(h-1)*w+xx);}for(let y=0;y<h;y++){st.push(y*w,y*w+w-1);}
+  while(st.length){const p=st.pop();if(bg[p])continue;if(!isBg(p))continue;bg[p]=1;const px=p%w,py=(p/w)|0;if(px>0)st.push(p-1);if(px<w-1)st.push(p+1);if(py>0)st.push(p-w);if(py<h-1)st.push(p+w);}
+  // foreground components, drop small specks
+  const fg=new Uint8Array(N);for(let p=0;p<N;p++)fg[p]=bg[p]?0:1;
+  const lab=new Int32Array(N).fill(-1);const areas=[];let comp=0;
+  for(let p=0;p<N;p++){if(fg[p]&&lab[p]<0){const q=[p];lab[p]=comp;let a=0;while(q.length){const cu=q.pop();a++;const px=cu%w,py=(cu/w)|0;if(px>0&&fg[cu-1]&&lab[cu-1]<0){lab[cu-1]=comp;q.push(cu-1);}if(px<w-1&&fg[cu+1]&&lab[cu+1]<0){lab[cu+1]=comp;q.push(cu+1);}if(py>0&&fg[cu-w]&&lab[cu-w]<0){lab[cu-w]=comp;q.push(cu-w);}if(py<h-1&&fg[cu+w]&&lab[cu+w]<0){lab[cu+w]=comp;q.push(cu+w);}}areas.push(a);comp++;}}
+  const minA=N*0.008;const alpha=new Uint8ClampedArray(N);
+  for(let p=0;p<N;p++)alpha[p]=(fg[p]&&areas[lab[p]]>=minA)?255:0;
+  // soften 1px fringe
+  const out=new Uint8ClampedArray(alpha);
+  for(let y=1;y<h-1;y++)for(let xx=1;xx<w-1;xx++){const p=y*w+xx;if(alpha[p]&&(!alpha[p-1]||!alpha[p+1]||!alpha[p-w]||!alpha[p+w]))out[p]=130;}
+  for(let p=0;p<N;p++)d[p*4+3]=out[p];
+  x.putImageData(img,0,0);return c;}
 function makeSticker(src,outline){let w=src.width,h=src.height;const s=Math.min(1,760/Math.max(w,h));w=Math.round(w*s);h=Math.round(h*s);
   const m=outline||Math.max(8,Math.round(Math.max(w,h)*0.035)),pad=m+8,cw=w+pad*2,ch=h+pad*2;
   const base=document.createElement('canvas');base.width=w;base.height=h;base.getContext('2d').drawImage(src,0,0,w,h);
@@ -802,7 +826,7 @@ async function aiRemove(file,onP){
   if(!_bgmod_loading)_bgmod_loading=import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.6.0/+esm').catch(e=>{_bgmod_loading=null;throw e;});
   const mod=await _bgmod_loading;
   // isnet_quint8 = самая лёгкая/быстрая модель — критично для мобилы (меньше качать, быстрее считать)
-  const job=mod.removeBackground(file,{model:'isnet_quint8',output:{format:'image/png'},progress:(k,c,total)=>{onP&&onP(total?c/total:0);}});
+  const job=mod.removeBackground(file,{model:'isnet_quint8',publicPath:'https://cdn.jsdelivr.net/npm/@imgly/background-removal-data@1.6.0/dist/',output:{format:'image/png'},progress:(k,c,total)=>{onP&&onP(total?c/total:0);}});
   const blob=await Promise.race([job,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),60000))]);
   return await loadBitmap(blob);}
 
